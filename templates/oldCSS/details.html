@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+   <head>
+     <link href="/static/css/styles.css" rel="stylesheet">
+     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+     <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+     <link rel="Stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" />
+     <script src="/static/javascript/utils.js"></script>
+     <script src="/static/javascript/blockui.js"></script>
+     <script src="/static/javascript/autocomplete.js"></script>
+     <script src="http://d3js.org/d3.v3.min.js"></script>
+
+
+   </head>
+
+   <body>
+    <div id="fixed">
+        <a href="http://cs.rhul.ac.uk"><span class="rhul"></span></a>
+        <span class="placeholder1"></span>
+        <div class="placeholder2"> </div>
+        <div class="middle"> </div>
+        <div class="mainLinkRight">
+        <div class="greena">
+            <a href="http://www.paccanarolab.org" ><img src="/images/paccanarolab.png" alt="PaccanaroLab"/></a>
+        </div>
+    </div>
+    <hr class="mainbody"/>
+    <br>
+    <div class="container">
+        <div class="nicebox">
+            <h1>Detailed information </h1>
+            <h2>{{ disease_A }}:</h2>
+            <a href="http://omim.org/entry/{{disease_A}}">Link to OMIM record: {{disease_A}}</a>
+            <p>
+                {{ name_disease_A}}
+            </p>
+
+            <h2>Proteins:</h2>
+            {% if A_proteins|length == 0 %}
+                <h3>No proteins found</h3>
+            {% else %}
+                {% for row in A_proteins %}
+                    <a href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
+                {%endfor%}
+            {%endif%}
+
+            <h2>MeSH terms:</h2>
+              {% for row in A_mesh %}
+                  {{ row }}
+              {% endfor %}
+            <hr>
+            <h2>{{ disease_B }}:</h2>
+
+            <a href="http://omim.org/entry/{{disease_B}}">Link to OMIM record: {{disease_B}}</a>
+            <p>
+                {{ name_disease_B}}
+            </p>
+            <h2>Proteins:</h2>
+            {% if A_proteins|length == 0 %}
+                <h3>No proteins found</h3>
+            {% else %}
+
+                {%for row in B_proteins%}
+                    <a href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
+                {%endfor%}
+            {% endif %}
+
+            <h2>MeSH terms:</h2>
+              {% for row in B_mesh %}
+                  {{ row }}
+              {% endfor %}
+
+             <div class="panel">
+
+                 <h2>Expand for more information</h2>
+                   <div class="panelcontent">
+                       Insert details here if needed
+                   </div>
+             </div>
+         </div>
+        <div class="nicebox">
+            <h1>here comes the boom!</h1>
+        </div>
+
+     </div>
+   </div>
+   </body>
+</html>

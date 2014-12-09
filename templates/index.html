@@ -1,0 +1,279 @@
+{%load staticfiles%}
+<!DOCTYPE HTML>
+<!--
+	Read Only by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Ontological analysis of OMIM phenotypes</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+                <script src="{% static 'javascript/jquery.min.js' %} "></script>
+                <script src="{% static 'javascript/jquery-ui.js' %} "></script>
+                <script src="{% static 'javascript/jquery.scrollzer.min.js' %}"></script>
+                <script src="{% static 'javascript/jquery.scrolly.min.js' %}"></script>
+                <script src="{% static 'javascript/skel.min.js' %}"></script>
+                <script src="{% static 'javascript/skel-layers.min.js' %}"></script>
+                <script src="{% static 'javascript/init.js' %}"></script>
+                <script src="{% static 'javascript/blockui.js' %}"></script>
+                <script src="{% static 'javascript/utils.js' %}"></script>
+
+                
+                <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/>
+
+                <link rel="stylesheet" href="{% static 'css/skel.css' %}" />
+                <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+                <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
+                <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
+	</head>
+
+<script>
+
+$(document).ready(function() {
+
+            $( "#diseaseA_input" ).autocomplete({ 
+                "delay": 0, 
+                "minLength": 2, 
+                "select": function( event, ui ) {
+                    $("#diseaseA_hidden" ).val( ui.item.value);
+                    $("#diseaseA_input" ).val( ui.item.label);
+                    return false;
+                },
+                "source": function(request, response) { 
+                    $.ajax({ 
+                        url: "{% url 'get_entities' %}",  
+                        dataType: "json", 
+                        data: { 
+                            term: request.term, 
+                        }, 
+                        success: function(data) { 
+                            response(data); 
+                        } ,
+                        error: function(data, status, xhr) {
+                            console.log(data);
+                            alert('Something has gone wrong. Please click OK and try again');
+                        },
+                    }); 
+                }, 
+
+            }); 
+
+            $( "#diseaseB_input" ).autocomplete({ 
+                "delay": 0, 
+                "minLength": 2, 
+                "select": function( event, ui ) {
+                    $("#diseaseB_hidden" ).val(ui.item.value);
+                    $("#diseaseB_input" ).val(ui.item.label);
+                    return false;
+                },
+                "source": function(request, response) { 
+                    $.ajax({ 
+                        url: "{% url 'get_entities' %}",  
+                        dataType: "json", 
+                        data: { 
+                            term: request.term, 
+                        }, 
+                        success: function(data) { 
+                            response(data); 
+                        },
+                        error: function(data, status, xhr) {
+                            console.log(data);
+                            alert('Something has gone wrong. Please click OK and try again');
+                        },
+                    }); 
+                }, 
+            }); 
+
+            $( "#disease_explore" ).autocomplete({ 
+                "delay": 0, 
+                "minLength": 2, 
+                "select": function( event, ui ) {
+                    $("#disease_explore_hidden" ).val( ui.item.value);
+                    $("#disease_explore" ).val( ui.item.label);
+                    return false;
+                },
+                "source": function(request, response) { 
+                    $.ajax({ 
+                        url: "{% url 'get_entities' %}",  
+                        dataType: "json", 
+                        data: { 
+                            term: request.term, 
+                        }, 
+                        success: function(data) { 
+                            response(data); 
+                        },
+                        error: function(data, status, xhr) {
+                            console.log(data);
+                            alert('Something has gone wrong. Please click OK and try again');
+                        },
+                    }); 
+                }, 
+            }); 
+    
+    $("#searchForm").submit(function(e){
+        window.location.href = "/disimweb/score/"+$("#diseaseA_hidden").val()+"/"+$("#diseaseB_hidden").val();
+        return false;
+    });
+
+    $("#exploreForm").submit(function(e){
+        var url = "{% url 'explore' 999999 %}".replace (999999, $("#disease_explore_hidden").val());
+        window.location.href = url;
+        return false;
+    });
+
+});
+</script>
+
+	<body>
+		<div id="wrapper">
+
+			<!-- Header -->
+				<section id="header" class="skel-layers-fixed">
+					<header>
+                                        <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="" /></span>
+						<h1 id="logo"><a href="#">Disimweb</a></h1>
+						<p>A disease similarity browser</p>
+					</header>
+					<nav id="nav">
+						<ul>
+							<li><a href="#one" class="active">Home</a></li>
+							<li><a href="#two">Search</a></li>
+							<li><a href="#three">Explore</a></li>
+							<li><a href="#four">Download</a></li>
+                            <li><a href="#five">Acknowledgments</a></li>
+						</ul>
+					</nav>
+					<footer>
+						<ul class="icons">
+							<li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
+						</ul>
+					</footer>
+				</section>
+
+			<!-- Main -->
+				<div id="main">
+
+					<!-- One -->
+						<section id="one">
+							<div class="container">
+								<header class="major">
+									<h2>An ontological approach to disease similarities</h2>
+								</header>
+                                                                <p> Our similarity browser provides an intuitive interface to access our 
+                                                                disease similarity calculations. The result of a query is a number that 
+                                                                quantifies how similar two disease are at a molecular level while exclusively 
+                                                                using phenotypic information. </p>
+                                                                <p>  By mining the publications related to each OMIM record, we can use the high 
+                                                                quality descriptors the MeSH vocabulary provides to describe the publications. Combining 
+                                                                these data with the PaccanaroLab expertise in semantic similarity calculations enables 
+                                                                us to take full advantage of MeSH's high quality ontological structure and provide a very 
+                                                                accurate and highly covering disease similarity measure.</p>
+                                                                <p>
+                                                                If you found our data useful, please cite:<br/>
+                                                                Measuring disease similarity through ontological analysis of phenotypes<br/>
+                                                                Horacio Caniza, Alfonso E. Romero, Alberto Paccanaro. 
+                                                                </p>
+							</div>
+						</section>
+						
+					<!-- Two -->
+						<section id="two">
+							<div class="container">
+                                                            <h3>Search similarities</h3>
+                                                            <p>Search all available diseases. We cover 7545 diseaes in OMIM, which amouts to 
+                                                            97% of the entire dataset. <br/>
+                                                             You can start typing the name of the diseases or the MIM number, and then
+                                                             select the one you want from the choices available. Once the 'Search' button is pressed, we will 
+                                                             redirect you to the results page.</p>
+                                                        <form id="searchForm">
+                                                            <input class = "autocomplete_box" id="diseaseA_input"  required="" placeholder="Disease name" name="diseaseA_input" type="text" size="40"/>
+                                                            <br/>
+                                                            <input class = "autocomplete_box" id="diseaseB_input" required = "" placeholder="Disease name" name="diseaseB_input" type="text" size="40"/>
+                                                            <!--to store the results of the selection-->
+                                                            <input id="diseaseA_hidden"  type="hidden" value=""/>
+                                                            <input id="diseaseB_hidden"  type="hidden" value=""/>
+                                                            <br/>
+                                                            <input type="submit" value="Search"/>
+                                                        </form>
+							</div>
+						</section>
+						
+					<!-- Three -->
+						<section id="three">
+							<div class="container">
+								<h3>Explore!</h3>
+                                                                <p> We have developed a way to explore a diseases' neighbourhood. Select the 
+                                                                disease you want by typing its name or MIM number, and select one from the 
+                                                                dropdown list<br/>
+                                                                After you click 'Explore' we will redirect you to the result page, where 
+                                                                further exploration is possible</p>
+                                                            <form id="exploreForm">
+                                                                <input class = "autocomplete_box" id="disease_explore" required="" placeholder="MIM number or disease name" name="disease_explore" type="text" size="40"/>
+                                                                <input id="disease_explore_hidden"  type="hidden"/>
+                                                                <br/>
+                                                                <input type="submit" value="Explore the neighbourhood"/>
+                                                            </form>
+                                                         </div> <!--container-->
+						</section>
+						
+				
+					<!-- Four -->
+						<section id="four">
+                                        <div class="container">
+                                            <h3>Download</h3>
+                                            <p> All the data used to generate the similarity matrices is available. We provide
+                                            two formats for the similarity matrix
+                                            <ul>
+                                                <li>A triplet form, in which the first two columns represent the diseases and the third 
+                                                column the similarity score</li>
+                                                <li>A matrix form, where every cell (i,j) corresponds to the similarity value of the 
+                                                diseases i and diseae j. The file header provides the disease ordering in order 
+                                                to reference the correct row and column.
+                                            </ul>
+                                            </p>
+                                            <p>The MIM2MeSH file contains the mapping obtained through the publications associated
+                                            to each disease in OMIM</p>
+
+                                            <ul class="fa-ul">
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="#">Matrix similarity file</a></li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="#">Triplet similarity file</a></li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="#">MIM to MeSH mapping</a></li>
+                                            </ul>
+
+                                    </ul>
+                                            This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
+                                            <p>
+                                            The source code for the disease simiarity browser is available through <i class="fa fa-git"></i><a href="
+                                            </p>
+
+                        </section>
+
+						<section id="five">
+                              <div class="container">
+                                    <h3>Acknowledgments</h3>
+                                    <p>
+                                        I would like to thank Dr. Alfonso E. Romero for his help developing this browser. Juan Caceres provided help debugging the 
+                                        JavaScript and HTML.  Mateo Torres provided helped conceptualise the browser and provided feedback once it was completed. 
+                                    <br>
+                                    <a href="http://www.cs.rhul.ac.uk/~pwac092/">I kinda did the rest <i class="fa fa-smile-o"></i></a>
+                                    </p>
+                              </div>
+                        </section>
+
+
+			<!-- Footer -->
+                            <section id="footer">
+                                    <div class="container">
+                                            <ul class="copyright">
+                                                    <li>&copy; Disimweb - A disease similarity browser. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                                            </ul>
+                                    </div>
+                            </section>
+			
+		</div>
+	</body>
+</html>

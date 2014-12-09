@@ -1,0 +1,226 @@
+{%load staticfiles%}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>Index.</title>
+<html>
+   <head>
+
+     <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" />
+
+     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+     <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+     <script src="http://d3js.org/d3.v3.min.js"></script>
+
+     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+     <script src="{% static 'javascript/utils.js' %}"></script>
+     <script src="{% static 'javascript/blockui.js' %}"></script>
+     <script src="{% static 'javascript/autocomplete.js' %}"></script>
+
+
+        <script type="text/javascript">
+              //----------------
+                //show options
+                $(function () {
+                    $("#query").attr('class','selected');
+                    var tabContainers = $('div.tabs > div');
+                    $('div.tabs ul.tabNavigation a').click(function () {
+                        tabContainers.fadeOut();
+                        tabContainers.hide();
+                        tabContainers.filter(this.hash).fadeIn();
+                        //tabContainers.filter(this.hash).show();
+                        $('div.tabs ul.tabNavigation a').removeClass('selected');
+                        $(this).addClass('selected');
+                        return false;
+                    }).filter('querySimilarity').click();
+                });
+                //----------------
+        </script>
+
+
+     <script type="text/javascript">
+
+       $(document).ready(function() {
+        //reset stuff.
+         $("#diseaseA_input").attr("class","");
+         $("#diseaseB_input").attr("class","");
+         $("#mesh_input").attr("class","");
+         //show only the query
+         $("#exploreNeighbourhood").hide();
+         $("#download").hide();
+         //$("#queryMesh").hide();
+
+         /*$("#searchMesh").click(function(e){
+            $.blockUI();
+             if ($("#").val() == "")
+             {
+                  $.unblockUI();
+                  $("#mesh_input").attr("class","error");
+                  return false;
+             }
+             else{
+                  $("#mesh_input").attr("class","");
+                  window.location.href = "/disimweb/queryMesh/?terms="+$("#mesh_input").val();
+             }
+
+         });*/
+
+         $("#search").click(function(e) {
+            $.blockUI();
+             if ($("#diseaseA_input").val() == "" || $("#diseaseB_input").val() == "")
+             {
+                  $.unblockUI();
+                  $("#diseaseA_input").attr("class","error");
+                  $("#diseaseB_input").attr("class","error");
+                  return false;
+             }
+             else{
+                  $("#diseaseA_input").attr("class","");
+                  $("#diseaseB_input").attr("class","");
+                  window.location.href = "/disimweb/score/"+$("#diseaseA_hidden").val()+"/"+$("#diseaseB_hidden").val();
+             }
+         });
+
+         $("#explore").click(function(e) {
+             if ($("#disease_explore").val() == "")
+             {
+                  $("#disease_explore").attr("class","error");
+                  return false;
+             }
+             else{
+                  $("#disease_explore").attr("class","");
+                  var url = "{% url 'explore' 999999 %}".replace (999999, $("#disease_explore_hidden").val());
+                  window.location.href = url;
+             }
+         });
+       });
+     </script>
+   </head>
+
+   <body>
+    <div id="fixed">
+        <a href="http://cs.rhul.ac.uk"><span class="rhul"></span></a>
+        <span class="placeholder1"></span>
+        <div class="placeholder2"> </div>
+        <div class="middle"> </div>
+        <div class="mainLinkRight">
+        <div class="greena">
+            <a href="http://www.paccanarolab.org" ><img src="{% static 'images/paccanarolab.png' %}" alt="PaccanaroLab"/></a>
+        </div>
+    </div>
+    <hr class="mainbody"/>
+    <div class = "container"> <!--container-->
+        <h1>An ontological approach to disease similarities</h1>
+        <p>
+        Our similarity browser provides an intuitive interface to access our disease similarity
+        calculations. The result of a query is a <em>number </em> that quantifies how similar 
+        two disease are at a molecular level while exclusively using phenotypic information. 
+        </p>
+        <p>
+        By mining the publications related to each <a href="http://www.omim.org">OMIM</a> record, 
+        we can use the high quality descriptors the <a href="//http://www.nlm.nih.gov/mesh/MBrowser.html">MeSH</a> vocabulary provides to describe the publications. 
+        Combining these data with the <a href="www.paccanarolab.org"> PaccanaroLab</a> 
+        expertise in <a href="http://en.wikipedia.org/wiki/Semantic_similarity#Biomedical_Informatics">semantic similarity</a> 
+        calculations enables us to take full advantage of MeSH's high quality 
+        ontological structure and provide a very accurate and highly covering disease similarity measure.
+        </p>
+        If you found our data useful, please cite:
+        <ul>
+            <li><em> Horacio Caniza, Alfonso E. Romero, Alberto Paccanaro. Measuring disease similarity through ontological analysis of phenotypes </em> </li>
+    </ul>
+        Visit the project <a href="http://www.paccanarolab.org/disease_similarity">website</a> at <a href="http://www.paccanarolab.org">PaccanaroLab</a> for more details, or
+        contact us  at <img src = "{% static 'images/email.png' %}" alt="email" /><br>
+        Please check disclaimer and general information <a href="{% url 'disclaimer' %}">page</a>
+     <br><br>
+     <div class="tabs">
+        <!--tabs-->
+        <ul class="tabNavigation">
+            <li><a href="#querySimilarity" id="query">Query</a></li>
+            <li><a href="#exploreNeighbourhood">Explore</a></li>
+            <!--<li><a href="#queryMesh">Query by MeSH term</a></li>-->
+            <li><a href="#download">Download</a></li>
+        </ul>
+        <div id = "querySimilarity"><!-- similarity-->
+            <h3> Query the similarity of a pair of disease</h3>
+            <div class="nicebox">
+                <h2>Select the diseases</h2>
+                 <div>
+                     <br>
+                     <label for="diseaseA_input">OMIM number or disease name:</label>
+                     <input id="diseaseA_input" name="diseaseA_input" type="text" size="40"/>
+                     <label for="diseaseB_input">OMIM number or disease name:<label>
+                     <input id="diseaseB_input" name="diseaseB_input" type="text" size="40"/>
+                     <input id="diseaseA_hidden"  type="hidden"/>
+                     <input id="diseaseB_hidden"  type="hidden"/>
+                 </div>
+                 <br>
+                 <button id="search" style="width:100px;height:50px">Search</button>
+                 <div class="panel">
+                       <h2>Expand for more information</h2>
+                       <div class="panelcontent">
+                           The search feature will allow you to retrieve the similarity between 
+                           any two diseases.
+                           Simply input a pair of diseases by typing their names or OMIM numbers
+                           and click the Search button.
+                       </div>
+                 </div>
+             </div> 
+        </div><!-- similarity-->
+
+        <!-- neighbourhood -->
+       <div id="exploreNeighbourhood" style="clear:both; display:block;">
+        <h3> Explore a diseases neighbourhood</h3>
+            <div class="nicebox">
+                <h2>Select the disease</h2>
+                 <div>
+                     <br>
+                     <label for="disease_explore">OMIM number or disease name:</label>
+                     <input id="disease_explore" name="disease_explore" type="text" size="40"/>
+                     <input id="disease_explore_hidden"  type="hidden"/>
+                 </div>
+                 <br>
+                 <button id="explore" style="width:100px;height:50px">Explore</button>
+                 <div class="panel">
+                       <h2>Expand for more information</h2>
+                       <div class="panelcontent">
+                           This feature will allow you to explore a disease's neighbourhood, 
+                           navigating through it's most relevant neighbours.
+                           Simply type a disease's name or OMIM number and click the Explore button.
+                       </div>
+                 </div>
+             </div> 
+         </div><!-- neighbourhood -->
+
+        <div id="download" style="clear:both; display:block;">
+            <h3>Download the raw data</h3>
+            <div class="nicebox">
+                    <ul>
+                    <li><a href="download/simTriplet/">Similarity data (triplet form)</a></li>
+                    <li><a href="download/simMatrix/">Similarity data (matrix form)</a></li>
+                </li>
+                <li><a href="download/omim2mesh/">OMIM to MeSH mapping</a></li>
+                <li><a href="download/omim2pubmed/">OMIM to PubMed mapping</a></li>
+            </div>
+        </div> <!--download-->
+
+        <!--<div id="queryMesh" style="clear:both; display:block;">
+            <div class="nicebox">
+                 <label for="disease_explore">MeSH term:</label>
+                 <input id="mesh" name="disease_explore" type="text" size="40"/>
+                 <input id="disease_explore_hidden"  type="hidden"/>
+                 <button id="searchMesh" style="width:100px;height:50px">Search</button>
+                 <div class="panel">
+                       <h2>Expand for more information</h2>
+                       <div class="panelcontent">
+                           Select a MeSH term to search diseases annotated with it.
+                       </div>
+                 </div>
+            </div>
+        </div> mesh-->
+
+
+    </div><!--tabs-->
+</div><!--mainbox-->
+   </body>
+</html>

@@ -1,0 +1,154 @@
+{%load staticfiles%}
+<html>
+   <head>
+     <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" />
+     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+     <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+     <script src="http://d3js.org/d3.v3.min.js"></script>
+
+     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+     <script src="{% static 'javascript/utils.js' %}"></script>
+     <script src="{% static 'javascript/blockui.js' %}"></script>
+     <script src="{% static 'javascript/autocomplete.js' %}"></script>
+     <script src="{% static 'javascript/tooltip.js' %}"></script>
+     <script src="{% static 'javascript/radialBarChart.js' %}"></script>
+     <script>
+
+        //for the chart corresponding to the first disease
+        $(document).ready(function() {
+            //explore a new disease
+             $("#explore").click(function(e) {
+                 $("#chart").html("");
+                 //request for a new disease when clicked.
+                 //plotChart($("#hovered_disease").val(), 40);
+                  var url = "{% url 'explore' 999999 %}".replace (999999, $("#hovered_disease").val());
+                  window.location.href = url;
+             });
+            //change the data when a segment is clicked.
+            $("#hovered_disease").change(function (e){
+
+                $.ajax({
+                    url: "/disimweb/details/"+$("#hovered_disease").val(),
+                    dataType: "json",
+                    type: "get",
+                    success: function(data, status, xhr) {
+                        saveData = data;
+                        $("#name").text(data['name']['prefix'] + " " + data['name']['title']);
+                        var i,j,slice_size= 7;
+                        var textString = "";
+                        for (i = 0,j = data['mesh'].length; i < j; i += slice_size) {
+                            textString = textString + data['mesh'].slice(i,i + slice_size).join() + "<br/>"; 
+                        }
+                        $("#mesh").html(textString);
+
+                        var i,j,slice_size= 7;
+                        var textString = "";
+                        for (i = 0,j = data['proteins'].length; i < j; i += slice_size) {
+                            textString = textString + data['proteins'].slice(i,i + slice_size).join() + "<br/>";
+                        }
+                        $("#proteins").html(textString);
+                    },
+                    error: function(xhr, status, error){
+                        alert(error);
+                    }
+                 });
+           });
+           //get the chart data for the first request
+           $.blockUI();
+           plotChart($("#chosen_disease").val(), 20);
+           $.unblockUI();
+        });
+
+        $(function() {
+                $( "#slider" ).slider({
+                    value:3,
+                    min: 3,
+                    max: 40,
+                    step: 1,
+                    slide: function( event, ui ) {
+                        plotChart($("#chosen_disease").val(), ui.value);
+                    }
+                });
+        });
+        
+        function plotChart(disease, k){
+                $.ajax({
+                    url: "/disimweb/neighbourhood/"+disease+"/"+k+"/",
+                    dataType: "json",
+                    type: "get",
+                    success: function(data, status, xhr) {
+                      var chart = radialBarChart()
+                        .barHeight(300)
+                        .reverseLayerOrder(true)
+                        .capitalizeLabels(true)
+                        .barColors(['#B66199', '#FF0099','#0000FF','#00CC00','#663300', '#9392CB', '#76D9FA', '#BCE3AD', '#FFD28C', '#F2918B'])
+                        .domain([0,4])
+                        .tickValues([1,2,3,4])
+                        .tickCircleValues([1,1.5,2,2.5,3,3.5]);
+                      d3.select('#chart')
+                        .datum(data)
+                        .call(chart);
+                      $.unblockUI();
+                    },
+                    error: function(xhr, status, error){
+                        alert(error);
+                    }
+                 });
+        }
+
+     </script>
+
+   </head>
+
+   <body>
+    <input type="hidden" value="{{chosen_disease}}" id="chosen_disease"/>
+    <div id="fixed">
+        <a href="http://cs.rhul.ac.uk"><span class="rhul"></span></a>
+        <span class="placeholder1"></span>
+        <div class="placeholder2"> </div>
+        <div class="middle"> </div>
+        <div class="mainLinkRight">
+        <div class="greena">
+            <a href="http://www.paccanarolab.org" ><img src="{% static 'images/paccanarolab.png' %}" alt="PaccanaroLab"/></a>
+        </div>
+    </div>
+    <hr class="mainbody"/>
+        <div class="nicebox">
+            <h2>Explore the neighbourhood of {{chosen_disease}}</h2>
+            <div id="chart" style="width:640px; height:640px;float:left;"> </div>
+            <div id="side_info" style="width: 40%; float: left;">
+                <input type="text" id="hovered_disease" name="hovered_disease"size="6"/>
+                <!--this is to be loaded with javascript after ajax query for the data-->
+                <p id="name"></p>
+                <p id="proteins"></p>
+                <p id ="mesh"></p>
+                <button id="explore" style="width:100px;height:50px">Explore this disease</button>
+            </div>
+            <div style="clear:both"/></div>
+            <div id="slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+                    <span class="ui-slider-handle ui-state-default ui-corner-all" ></span>
+                </div>
+            <div class="panel">
+                <h2>Click for more information</h2>
+                <div class="panelcontent">
+                    <p>
+                    The chart represents the diseases with the highest similarity to the
+                    chosen disease; the height of the bar shows the similarity value
+                    Colours were chosen to help diferentiate diseases, and in order to
+                    simplify navigation we have limited the maximum number of diseases that
+                    can be displayed to 40.
+                    </p>
+                    <p>
+                    Hovering the mouse on a specific segment displays 
+                    the disease and the similarity value between the selected disease
+                    and the one represented by the segment. Clicking on a segment displays
+                    information about the disease represented by it and, if you click the Explore button, 
+                    allows you to explore its neighbourhood.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+   </body>
+</html>

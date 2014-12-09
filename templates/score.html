@@ -1,0 +1,274 @@
+{%load staticfiles%}
+<!DOCTYPE HTML>
+<!--
+        Read Only by HTML5 UP
+        html5up.net | @n33co
+        Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+        <head>
+                <title>Ontological analysis of OMIM phenotypes</title>
+                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                <meta name="description" content="" />
+                <meta name="keywords" content="" />
+                <!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+                <script src="http://d3js.org/d3.v3.min.js"></script>
+                <script src="{% static 'javascript/jquery.min.js' %} "></script>
+                <script src="{% static 'javascript/jquery-ui.js' %} "></script>
+                <script src="{% static 'javascript/jquery.scrollzer.min.js' %}"></script>
+                <script src="{% static 'javascript/jquery.scrolly.min.js' %}"></script>
+                <script src="{% static 'javascript/skel.min.js' %}"></script>
+                <script src="{% static 'javascript/skel-layers.min.js' %}"></script>
+                <script src="{% static 'javascript/init.js' %}"></script>
+                <script src="{% static 'javascript/blockui.js' %}"></script>
+                <script src="{% static 'javascript/utils.js' %}"></script>
+                <script src="{% static 'javascript/tooltip.js' %}"></script>
+
+                 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+                <link rel="stylesheet" href="{% static 'css/skel.css' %}" />
+                <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+                <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
+                <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
+
+
+            
+        <style>
+
+            .bar {
+                fill: steelblue;
+            }
+
+            .bar:hover {
+                fill: brown;
+            }
+
+            .axis {
+                font: 10px sans-serif;
+            }
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .x.axis path {
+                display: none;
+            }
+
+            .chart rect {
+                  fill: steelblue;
+              }
+
+            .chart text {
+                  fill: black;
+                  font: 10px sans-serif;
+                  text-anchor: end;
+             }
+        </style>
+
+
+        <script type = "text/javascript">
+
+
+            $(document).ready(function() {
+                //start the tooltip
+                $(function() {
+                    $( document ).tooltip();
+                });
+                //###### the barchart ########
+                var selected_sim = {{similarity}};
+                var margin = {top: 20, right: 20, bottom: 30, left: 40},
+                    width = 500 - margin.left - margin.right,
+                    height = 220 - margin.top - margin.bottom;
+
+                var x = d3.scale.ordinal()
+                    .rangeRoundBands([0, width], .1);
+
+                var y = d3.scale.linear()
+                    .range([height, 0]);
+
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left")
+                    .ticks(20, '%');
+
+                var svg = d3.select("#chart").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                d3.csv("{% static 'files/histo' %}", type, function(error, data) {
+
+                  x.domain(data.map(function(d) { return d.bucket; }));
+                  y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+                  svg.append("g")
+                      .attr("class", "x axis")
+                      .attr("transform", "translate(0," + height + ")")
+                      .call(xAxis);
+
+                  svg.append("g")
+                      .attr("class", "y axis")
+                      .call(yAxis)
+                      .append("text")
+                      .attr("transform", "rotate(-90)")
+                      .attr("y", 10)
+                      .attr("dy", ".71em")
+                      .style("text-anchor", "end")
+                      .text("Similarity");
+
+                  svg.selectAll(".bar")
+                      .data(data)
+                      .enter().append("rect")
+                      .attr("class", "bar")
+                      .style("fill", function(d) { 
+                              if (d.bucket > selected_sim - 0.1 && d.bucket< selected_sim + 0.1)
+                              {
+                                return "brown";
+                              }
+                              return "steelblue"; 
+                      })
+                      .attr("x", function(d) { return x(d.bucket); })
+                      .attr("width", x.rangeBand())
+                      .attr("y", function(d) { return y(d.value); })
+                      .attr("height", function(d) { return height - y(d.value); });
+
+                });
+                function type(d) {
+                  d.value = +d.value; // coerce to number
+                  return d;
+                }
+        });
+
+
+        </script>
+
+
+
+        </head>
+
+        <body>
+                <div id="wrapper">
+
+                        <!-- Header -->
+                                <section id="header" class="skel-layers-fixed">
+                                        <header>
+                                        <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="" /></span>
+                                                <h1 id="logo"><a href="#">Disimweb</a></h1>
+                                                <p>A disease similarity browser</p>
+                                        </header>
+
+                                        <nav id="nav">
+                                                <ul>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#one">Home</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#two" class="active">Search</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#three">Explore</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#four">Download</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#five">Acknowledgments</a></li>
+                                                </ul>
+                                        </nav>
+
+                                        <footer>
+                                                <ul class="icons">
+                                                        <li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
+                                                </ul>
+                                        </footer>
+                                </section>
+
+                        <div id="one"></div>
+
+                        <!-- Main -->
+                                <div id="main">
+
+                                        <!-- One -->
+                                                <section id="overview">
+                                                        <div class="container">
+                                                            <header class="major">
+                                                                    <div class="table-wrapper">
+                                                                        <table class="alt">
+                                                                            <tbody>
+                                                                                    <tr>
+                                                                                        <td >
+                                                                                            <a href="#first_disease">{{ name_disease_A }} ({{disease_A}})</a> 
+                                                                                        </td>
+                                                                                        <td rowspan="2" style="vertical-align:middle; width:30%;"> <h4> {{similarity}} <h4></td>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                        <td >
+                                                                                            <a href="#second_disease">{{ name_disease_B }} ({{disease_B}})</a> 
+                                                                                        </td>
+                                                                                    </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                        </div>
+                                                                <div id = "chart" class="chart" ></div>
+                                                            </header>
+                                                        </div>
+                                                </section>
+
+                                                <section id="first_disease">
+                                                        <div class="container">
+                                                            <h4> {{name_disease_A}} ({{disease_A}})
+                                                                <a href="{% url 'explore' disease_A %}" target="_blank"><i class="fa fa-binoculars" title="Click to explore"></i></a>
+                                                            </h4>
+                                                               <h5>MeSH terms</h5>
+                                                               {% for mesh in A_mesh %}
+                                                               <i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>
+                                                               {%endfor%}
+                                                               <br/ > <br>
+                                                               <h5>Known proteins </h5>
+                                                                {% if A_proteins|length == 0 %}
+                                                                    <h6>No proteins found</h6>
+                                                                {% else %}
+                                                                    {% for row in A_proteins %}
+                                                                    <i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>
+                                                                    {%endfor%}
+                                                                        
+                                                                {% endif %}
+                                                        </div>
+                                                </section>
+
+                                                <section id="second_disease">
+                                                        <div class="container">
+                                                            <h4>{{name_disease_B}} ({{disease_B}}) 
+                                                                <a href="{% url 'explore' disease_B %}" target="_blank"><i class="fa fa-binoculars" title="Click to explore"></i></a>
+                                                            <h4>
+                                                               <h5>MeSH terms</h5>
+                                                               {% for mesh in B_mesh %}
+                                                                   <i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>
+                                                               {%endfor%}
+                                                               <br/ > <br>
+                                                               <h5>Known proteins</h5>
+                                                                {% if B_proteins|length == 0 %}
+                                                                    <h6>No proteins found</h6>
+                                                                {% else %}
+                                                                    {% for row in B_proteins %}
+                                                                        <i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>
+                                                                    {%endfor%}
+                                                                {% endif %}
+                                                        </div>
+                                                </section>
+
+                                </div>
+
+                                                
+
+                        <!-- Footer -->
+                            <section id="footer">
+                                    <div class="container">
+                                            <ul class="copyright">
+                                            <li>&copy; Disimweb - A disease similarity browser. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                                            </ul>
+                                    </div>
+                            </section>
+                        
+                </div>
+        </body>
+</html>

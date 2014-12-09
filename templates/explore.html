@@ -1,0 +1,316 @@
+{%load staticfiles%}
+<!DOCTYPE HTML>
+<!--
+        Read Only by HTML5 UP
+        html5up.net | @n33co
+        Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+        <head>
+                <title>Ontological analysis of OMIM phenotypes</title>
+                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                <meta name="description" content="" />
+                <meta name="keywords" content="" />
+                <!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+                <script type="text/javascript" src="{% static 'javascript/jquery.min.js' %} "></script>
+                <script type="text/javascript" src="{% static 'javascript/jquery-ui.js' %} "></script>
+                <script type="text/javascript" src="{% static 'javascript/skel.min.js' %}"></script>
+                <link rel="stylesheet" href="{% static 'css/skel.css' %}" />
+                <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css">
+                 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+                <script type="text/javascript" src="{% static 'javascript/skel-layers.min.js' %}"></script>
+                <script type="text/javascript" src="{% static 'javascript/blockui.js' %}"></script>
+                <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+                <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
+                <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
+                <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+                <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+                <!-- qtip -->
+                <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
+                <script type="text/javascript" src="{% static 'javascript/cytoscape-qtip.js' %}"></script>
+                <link rel="stylesheet" href="{% static 'css/panzoom.css' %}">
+                <script type="text/javascript" src="{% static 'javascript/cytoscape.js-panzoom.js' %}"></script>
+                 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+    <!-- small styling for the graph -->
+    <style>
+      #graph{
+          width: 1024px;
+          height: 700px;
+          margin-left: 100px;
+          background-color: #F1F1F0; /*#E1E1E0;*/
+          padding: 0;
+      }
+    </style>
+
+    <script>
+        var cy;
+        var query_disease;
+        var URL = '{{URL}}';
+        $( document ).ready(function() {
+            requestNeighbourhood(URL+'{{omim}}');
+
+
+            //start the tooltip
+            $(function() {
+                $( document ).tooltip();
+            });
+
+            //what to do when the buttons are pressed.
+            $("#compare").click(function (){
+                if  (query_disease)
+                {
+                    var win = window.open('http://www.paccanarolab.org/disimweb/score/{{chosen_disease_mim}}/'+query_disease+ '/', '_blank');
+                    if(win){
+                        //Browser has allowed it to be opened
+                       win.focus();
+                    }else{
+                       //Broswer has blocked it
+                       alert('Please allow popups for this site');
+                    }
+                }
+            });
+
+            
+            $("#explore").click(function (){
+                if (query_disease) {
+                    requestNeighbourhood(URL + query_disease);
+                }
+            });
+
+            //draw colorbar
+            var canvas = document.getElementById('colorbar');
+            var context = canvas.getContext('2d');
+            context.rect(0, 0, canvas.width, canvas.height);
+            // add linear gradient
+            var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+            // light blue
+            grd.addColorStop(0, '#FF0000');   
+            // dark blue
+            grd.addColorStop(1, '#0000FF');
+            context.fillStyle = grd;
+            context.fill();
+
+        });
+
+        function toggleLabels()
+        {
+            //fyi: this is the state before the box is changed.
+            if (!$("#label_toggle").prop("checked"))
+            {
+                cy.nodes().removeClass('no_label');
+            }
+            else
+            {
+                cy.nodes().addClass('no_label');
+            }
+        }
+
+        function requestNeighbourhood(request_url)
+        {
+            $.ajax({
+                url: request_url,
+                type: "get",
+                beforeSend: function( xhr ) {
+                    $.blockUI({ message: '<h1><img src="{% static 'images/loading.gif' %}"/> <br/> We are creating the network...</h1>' });
+                },
+                success: function(data, status, xhr) {
+                    plotNetwork(data);
+                    $.unblockUI();
+                },
+                error: function(data, status, xhr) {
+                    console.log(data);
+                    alert('Something has gone wrong. Please click OK to continue');
+                    $.unblockUI();
+                },
+          });
+        } 
+        
+        function plotNetwork(data){
+
+           cy = cytoscape({
+               container: $('#graph')[0],
+              style: cytoscape.stylesheet()
+                .selector('node')
+                  .css({
+                    //'background-color': 'data(colour, 0, 100)',
+                    'width': 20,
+                    'height': 20,
+                    'content': 'data(id)',
+                    'text-valign': 'center',
+                  })
+                .selector('edge')
+                  .css({
+                    'line-color': 'mapData(colour,0,1, blue, red)',
+                    'width': 2,
+                    'opacity': 0.8
+                  })
+                .selector('.no_label')
+                  .css({
+                    'content': '',
+                  })
+                .selector('.faded')
+                  .css({
+                    'opacity': 0.25,
+                    'text-opacity': 0
+                  })
+                .selector('.highlighted')
+                  .css({
+                    'background-color': '#FFFFB2',
+                    'line-color': 'black',
+                    'opacity': 1
+                  })
+                .selector('.highlighted_centre')
+                  .css({
+                    'background-color': '#FFFFB2',
+                    'border-color': '#000',
+                    'border-width': 2,
+                    'border-opacity': 0.8,
+                    'opacity': 1
+                  }),
+              
+              elements: data,
+              
+              layout: {
+                name: 'concentric',
+                avoidOverlap: true,
+                concentric: function(){
+                    return this.data('level');
+                },
+                circle: true,
+                minNodeSpacing: 19, 
+                padding:2, //padding of the plot with the canvas. 
+              },
+
+             ready: function(){
+                 //handle the click
+                 var mynodes = this.nodes();
+                 var myedges = this.edges();
+
+                 this.panzoom({
+                 })
+
+                 this.on('click', 'node', function(){
+                     //restore all nodes to their default class
+                     mynodes.removeClass('highlighted');
+                     mynodes.removeClass('highlighted_centre');
+                     neighbours = this.neighborhood();
+                     //add the class for the selecte dnode.
+                     this.addClass('highlighted');
+                     this.addClass('highlighted_centre');
+                     //add the class for the other nodes.
+                     for (var i = 0; i < neighbours.length; i++)
+                     {
+                         if (neighbours[i].isNode())
+                         {
+                             neighbours[i].addClass('highlighted');
+                         }
+                     }
+                        
+                 }); //on tap
+
+                 this.on('click', 'node', function(){
+                     $("#query_disease").attr("value", this.data().id + ' - ' + this.data().title);
+                     query_disease = this.data().id;
+                 });
+
+                 this.edges().qtip({
+                    content: function(){ return this.data().similarity},
+                    position: {
+                        my: 'top center',
+                        at: 'bottom center'
+                    },
+                    style: {
+                        classes: 'qtip-bootstrap',
+                        tip: {
+                            width: 16,
+                            height: 8
+                        }
+                    }
+                });//qtip
+
+                
+                 this.nodes().qtip({
+                    content: function(){ return this.data().title },
+                    position: {
+                        my: 'top center',
+                        at: 'bottom center'
+                    },
+                    style: {
+                        classes: 'qtip-bootstrap',
+                        tip: {
+                            width: 16,
+                            height: 8
+                        }
+                    }
+                });//qtip
+              }// ready 
+        });
+        } //plotNetwork
+
+     </script>
+
+        </head>
+
+        <body>
+            <!-- Header -->
+                        <section id="header" class="skel-layers-fixed">
+                                <header>
+                                <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="" /></span>
+                                        <h1 id="logo"><a href="#">Disimweb</a></h1>
+                                        <p>A disease similarity browser</p>
+                                </header>
+                                <nav id="nav">
+                                        <ul>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#one">Home</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#two" >Search</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#three" class="active">Explore</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#four">Download</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#five">Acknowledgments</a></li>
+                                        </ul>
+                                </nav>
+                                <footer>
+                                        <ul class="icons">
+                                                <li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
+                                        </ul>
+                                </footer>
+                        </section>
+
+                                <div id="main">
+                                                <section id="one">
+                                                <div class="">
+                                                    <div style="width:1024px; margin-left:100px; padding-top:10px">
+                                                        <table class="alt">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td rowspan="2" style="vertical-align:middle; width:10%;"><center><i id="compare" class="fa fa-compress fa-3x" title='Click here to open a new tab and compare both diseases'></i></center></td>
+                                                                    <td > <center> {{  chosen_disease_mim }} - {{chosen_disease_name}} </center></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td >
+                                                                        <div id="new_disease">
+                                                                            <i id="explore" class="fa fa-binoculars" title='Click to explore the neighbourhood of this disease'></i>
+                                                                            <input id = "query_disease" size = "84" style="border:none;"/> 
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        </div>
+                                                </div>
+                                                <div  id="graph"></div>
+                                                <div style="position:absolute;top:204px;left:1134px">
+                                                    <div style="padding:0px">3.7</div>
+                                                    <canvas id="colorbar" width="20" height="400"></canvas>
+                                                    <div style="padding:0px 5px">0</div>
+                                                    <!-- centrado en el canvas top:354px left:1100px -->
+                                                </div>
+                                                <br>
+                                                <div style="margin-left:100px">
+                                                        <input id ="label_toggle" type="checkbox" name="label_toggle" checked>
+                                                        <label style="margin-left:10px" for="label_toggle" onclick="toggleLabels();">Toggle node labels</label>
+                                                </div><!--styling for the buttons-->
+                                                </section>
+                            </div>
+
+        </body>

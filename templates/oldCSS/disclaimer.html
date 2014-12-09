@@ -1,0 +1,67 @@
+
+{%load staticfiles%}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>Index.</title>
+<html>
+   <head>
+
+     <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" />
+
+     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+     <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+     <script src="http://d3js.org/d3.v3.min.js"></script>
+
+     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+     <script src="{% static 'javascript/utils.js' %}"></script>
+     <script src="{% static 'javascript/blockui.js' %}"></script>
+     <script src="{% static 'javascript/autocomplete.js' %}"></script>
+
+   </head>
+
+   <body>
+    <div id="fixed">
+        <a href="http://cs.rhul.ac.uk"><span class="rhul"></span></a>
+        <span class="placeholder1"></span>
+        <div class="placeholder2"> </div>
+        <div class="middle"> </div>
+        <div class="mainLinkRight">
+        <div class="greena">
+            <a href="http://www.paccanarolab.org" ><img src="{% static 'images/paccanarolab.png' %}" alt="PaccanaroLab"/></a>
+        </div>
+    </div>
+    <hr class="mainbody"/>
+
+    <div class = "container"> <!--container-->
+        <div class="nicebox">
+            <h2>Licensing</h2>
+
+            Disease similarity browser DisimBrowser (c) by  Horacio Caniza <br>
+
+            DisimBrowser is licensed under a Creative Commons Attribution 3.0 Unported License.<br>
+
+            You should have received a copy of the license along with this work.  If not, see <http://creativecommons.org/licenses/by/3.0/>. <br>
+
+        </div>
+
+        <div class="nicebox">
+            <h2>Acknowledgements:</h2>
+                I would like to thank:
+                <ul>
+                    <li>Alfonso E. Romero</li>
+                    <li>Mateo Torres</li>
+                    <li>Ju&aacute;n Jos&eacute; C&aacute;ceres</li>
+                </ul>
+                Alfonso provided his invaluable expertise with Django as well as comments once the site went live. Mateo helped in the early stages, 
+                with the JavaScript coding and the proof of concept of the application. Ju&aacute;n helped debug the JavaScript and CSS code.
+        </div>
+
+
+    </div>
+
+
+    </div><!--mainbox-->
+   </body>
+</html>

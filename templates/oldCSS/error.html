@@ -1,0 +1,35 @@
+{%load staticfiles%}
+<!DOCTYPE html>
+<html>
+   <head>
+     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+   </head>
+
+   <body>
+
+    <div id="fixed">
+        <a href="http://cs.rhul.ac.uk"><span class="rhul"></span></a>
+        <span class="placeholder1"></span>
+        <div class="placeholder2"> </div>
+        <div class="middle"> </div>
+        <div class="mainLinkRight">
+        <div class="greena">
+            <a href="http://www.paccanarolab.org" ><img src="{% static 'images/paccanarolab.png' %}" alt="PaccanaroLab"/></a>
+        </div>
+    </div>
+    <hr class="mainbody"/>
+    <br>
+    <div class="container" style="background:white">
+        <h1></h1>
+        <br>
+        <center>
+            <img src="{% static 'images/error.png' %}" hspace="200"></img>
+        </center>
+        {%if message %}
+            <p> An error ocurred. The error message is {{message}}. We have logged this error.</p>
+        {% endif %}
+        <a href="http://www.paccanarolab.org/disimweb"><h1>Return Home</h1></a>
+    </div>
+
+   </body>
+</html>

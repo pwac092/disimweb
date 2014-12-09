@@ -1,0 +1,197 @@
+{%load staticfiles%}
+<html>
+   <head>
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" />
+        <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+        <script src="{% static 'javascript/utils.js' %}"></script>
+        <script src="{% static 'javascript/blockui.js' %}"></script>
+        <script src="{% static 'javascript/autocomplete.js' %}"></script>
+     <script src="{% static 'javascript/tooltip.js' %}"></script>
+
+        <script type = "text/javascript">
+            //in case we want the bar chart. But I think the pie chart is better.
+            $( document ).ready(function() {
+                //to determine ending of numeral
+                function endingCalculator (score, max){
+                    var value = Math.round(100*score/max) % 10;
+                    var ending = "";
+                    switch(value){
+                        case 1:
+                            ending = "st";
+                            break;
+                        case 2:
+                            ending = "nd";
+                            break;
+                        case 3:
+                            ending = "rd";
+                            break;
+                        default:
+                            ending = "th";
+                            break;
+                    }
+                    return  Math.round(100*score/max)  + ending + " similarity percentile"; 
+                }
+                var margin = {top: 20, right: 1, bottom: 20, left: 10},
+                    width = 600 - margin.right - margin.left,
+                    height = 70 - margin.top - margin.bottom;
+
+                var x = d3.scale.linear()
+                    .domain([.05, 0.95])
+                    .range([0, width]);
+
+                var y = d3.scale.linear()
+                    .range([0, height]);
+
+                var svg = d3.select("#svg_container").append("svg")
+                    .attr("width", width + margin.right + margin.left)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + -(margin.left) + ",2)");
+
+
+                var score = {{similarity}};
+                var max = 3.87932530078;
+                var percentile = width*(score/max);
+                //backgroud rectangle
+                svg.append("rect")
+                    .attr("fill", "#333")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                //above
+                svg.append("rect")
+                    .attr("fill", "#CC0000")
+                    .attr("width", width)
+                    .attr("height", height*0.5)
+                    .attr("transform", "translate(0,7.5)")
+                    .call(d3.helper.tooltip()
+                            .attr({class: function(d, i) { return d + ' ' +  i + ' A'; }})
+                            .style({color: 'black', background:'white'})
+                            .text(function(d, i){ 
+                                return endingCalculator(score, max);
+                                })
+                    );
+
+                //below        
+                svg.append("rect")
+                    .attr("fill", "#3399FF")
+                    .attr("width", percentile)
+                    .attr("height", height*0.5)
+                    .attr("transform", "translate(0,7.5)")
+                    .call(d3.helper.tooltip()
+                            .attr({class: function(d, i) { return d + ' ' +  i + ' A'; }})
+                            .style({color: 'black', background:'white'})
+                            .text(function(d, i){ 
+                                return endingCalculator(score, max);
+                                })
+                    );
+
+                svg.append("g")
+                    .attr("class", "grid")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.svg.axis().scale(x).ticks(20).tickSize(-height))
+                  .selectAll(".tick")
+                    .data(x.ticks(10), function(d) {
+                         return d; 
+                    })
+                  .exit()
+                    .classed("minor", true);
+
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.svg.axis().scale(x).ticks(10));
+
+            }); //document.ready
+        </script>
+
+   </head>
+
+   <body>
+    <div id="fixed">
+        <a href="http://cs.rhul.ac.uk"><span class="rhul"></span></a>
+        <span class="placeholder1"></span>
+        <div class="placeholder2"> </div>
+        <div class="middle"> </div>
+        <div class="mainLinkRight">
+        <div class="greena">
+            <a href="http://www.paccanarolab.org" ><img src="{% static 'images/paccanarolab.png' %}" alt="PaccanaroLab"/></a>
+        </div>
+    </div>
+    <hr class="mainbody"/>
+    <br>
+
+    <div class="container">
+
+        <div class="nicebox">
+            <h2>  {{ disease_A }} -  {{ disease_B }} score </h2>
+            <div>
+                <input type="text" id="resultBox" readonly value="{{ similarity }}" style="float: left;"/>
+                <div id="svg_container"style="float:right;" ></div>
+            </div>
+            <br><br>
+            <h1>Detailed information </h1>
+            <p>
+                <h2><a href="http://omim.org/entry/{{disease_A}}">{{disease_A}}</a></h2>
+            </p>
+            {{name_disease_A}}
+
+             <div class="panel">
+                 <h2>Proteins</h2>
+                   <div class="panelcontent">
+                        {% if A_proteins|length == 0 %}
+                            <h3>No proteins found</h3>
+                        {% else %}
+                            {% for row in A_proteins %}
+                                <a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
+                            {% endfor %}
+                        {% endif %}
+                   </div>
+             </div>
+
+             <div class="panel">
+                <h2>MeSH terms</h2>
+                   <div class="panelcontent">
+                       {% for mesh in A_mesh %}
+                           <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>
+                       {%endfor%}
+                  </div>
+              </div>
+            <hr>
+            <p>
+                <h2><a href="http://omim.org/entry/{{disease_B}}">{{disease_B}}</a></h2>
+            </p>
+            {{name_disease_B}}
+             <div class="panel">
+                <h2>Proteins</h2>
+                   <div class="panelcontent">
+                        {% if B_proteins|length == 0 %}
+                            <h3>No proteins found</h3>
+                        {% else %}
+
+                            {%for row in B_proteins%}
+                                <a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
+                            {%endfor%}
+
+                        {% endif %}
+                    </div>
+                </div>
+
+             <div class="panel">
+                <h2>MeSH terms</h2>
+                   <div class="panelcontent">
+                       {% for mesh in B_mesh %}
+                           <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>
+                       {%endfor%}
+                  </div>
+              </div>
+         </div>
+
+     </div>
+   </div>
+   </body>
+</html>
