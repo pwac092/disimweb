@@ -74,6 +74,25 @@ def error(request):
 #########################
 # Result score          #
 #########################
+def ordinal(value):
+    try:
+        value = int(value)
+    except ValueError:
+        return value
+
+    if value % 100//10 != 1:
+        if value % 10 == 1:
+            ordval = u"%d%s" % (value, "st")
+        elif value % 10 == 2:
+            ordval = u"%d%s" % (value, "nd")
+        elif value % 10 == 3:
+            ordval = u"%d%s" % (value, "rd")
+        else:
+            ordval = u"%d%s" % (value, "th")
+    else:
+        ordval = u"%d%s" % (value, "th")
+
+    return ordval
 
 def score(request, omim_A, omim_B):
     json_data = defaultdict()
@@ -97,11 +116,12 @@ def score(request, omim_A, omim_B):
     #with previx
     #name_disease_B = detailsB.prefix + " " +detailsB.title
     name_disease_B = detailsB.title
-    return render(request, 'score.html', {'A_mesh':A_mesh, 'B_mesh':B_mesh, 'A_proteins':A_proteins,  'B_proteins':B_proteins, 'name_disease_A':name_disease_A, 'name_disease_B':name_disease_B, 'disease_A': detailsA.omim, 'disease_B':detailsB.omim , 'similarity':sim.similarity})
+    return render(request, 'score.html', {'A_mesh':A_mesh, 'B_mesh':B_mesh, 'A_proteins':A_proteins,  'B_proteins':B_proteins, 'name_disease_A':name_disease_A, 'name_disease_B':name_disease_B, 'disease_A': detailsA.omim, 'disease_B':detailsB.omim , 'similarity':sim.similarity, 'percentile': ordinal(sim.percentile)})
 
 #########################
 # Explore neighbourhood #
 #########################
+
 
 
 def explore(request, disease):
@@ -188,8 +208,8 @@ def get_entities(request):
         # get data from the request.
         query = request.GET.get('term', '')
         # filter names
-        results = omim_names.objects.filter(Q(label__icontains=query) | Q(id__icontains=query)).order_by('id')[:20]
-        results = results.values_list('id', 'label')
+        results = omim_names.objects.filter(Q(label__icontains=query) | Q(value__icontains=query)).order_by('value')[:20]
+        results = results.values_list('value', 'label')
         data = json.dumps([{"label": str(i[1]) + "("+str(i[0]) + ")", "value": str(i[0])} for i in results])
     else:
         data = 'fail'

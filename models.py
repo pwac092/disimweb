@@ -7,6 +7,7 @@ class similarityScores (models.Model):
     omim1 = models.CharField(max_length=10)
     omim2 = models.CharField(max_length=10)
     similarity = models.CharField(max_length=10)
+    percentile = models.CharField(max_length=10)
 
 #c.execute('''CREATE TABLE mimtoprot (omim text, uniprot_id text)''')
 class mimtoprot(models.Model):
@@ -31,9 +32,8 @@ class omim_details(models.Model):
     prefix = models.CharField(max_length=2)
 
 
-#CREATE TABLE "disimweb_omim_names" ("id" varchar(6) NOT NULL PRIMARY KEY, "value" varchar(100), "label" varchar(100));
+#c.execute('''CREATE TABLE disimweb_omim_names ("id" integer(6) NOT NULL PRIMARY KEY AUTOINCREMENT, value text, label text);
 class omim_names(models.Model):
-    id = models.CharField(max_length=6)
     value = models.CharField(max_length=100)
     label = models.CharField(max_length=100)
 

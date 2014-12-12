@@ -48,6 +48,8 @@
         var query_disease;
         var URL = '{{URL}}';
         $( document ).ready(function() {
+            //load the pivo disease
+            $("#pivot_disease").attr("value", "{{ chosen_disease_mim }} - {{ chosen_disease_name }}");
             requestNeighbourhood(URL+'{{omim}}');
 
 
@@ -73,9 +75,12 @@
 
             
             $("#explore").click(function (){
-                if (query_disease) {
-                    requestNeighbourhood(URL + query_disease);
+                if (query_disease_mim) {
+                    requestNeighbourhood(URL + query_disease_mim);
+                    $("#pivot_disease").attr("value", query_disease_name + "-" + query_disease_mim);
+                    $("#query_disease").attr("value", "");
                 }
+
             });
 
             //draw colorbar
@@ -211,7 +216,8 @@
 
                  this.on('click', 'node', function(){
                      $("#query_disease").attr("value", this.data().id + ' - ' + this.data().title);
-                     query_disease = this.data().id;
+                     query_disease_mim = this.data().id;
+                     query_disease_name = this.data().title;
                  });
 
                  this.edges().qtip({
@@ -257,7 +263,7 @@
                         <section id="header" class="skel-layers-fixed">
                                 <header>
                                 <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="" /></span>
-                                        <h1 id="logo"><a href="#">Disimweb</a></h1>
+                                        <h1 id="logo"><a href="http://www.paccanarolab.org/disimweb">Disimweb</a></h1>
                                         <p>A disease similarity browser</p>
                                 </header>
                                 <nav id="nav">
@@ -270,6 +276,10 @@
                                         </ul>
                                 </nav>
                                 <footer>
+                        <div id="logo_inst">
+                            <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" /></a>
+                            <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" /></a>
+                        </div>
                                         <ul class="icons">
                                                 <li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
                                         </ul>
@@ -284,7 +294,7 @@
                                                             <tbody>
                                                                 <tr>
                                                                     <td rowspan="2" style="vertical-align:middle; width:10%;"><center><i id="compare" class="fa fa-compress fa-3x" title='Click here to open a new tab and compare both diseases'></i></center></td>
-                                                                    <td > <center> {{  chosen_disease_mim }} - {{chosen_disease_name}} </center></td>
+                                                                    <td><input id = "pivot_disease" size = "84" style="border:none;" disabled/> </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td >

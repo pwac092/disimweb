@@ -29,10 +29,12 @@
                 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
-
-
-            
         <style>
+
+            .hover_change{
+                 cursor: pointer; cursor: hand;
+                 float:left;
+            }
 
             .bar {
                 fill: steelblue;
@@ -71,7 +73,6 @@
 
         <script type = "text/javascript">
 
-
             $(document).ready(function() {
                 //start the tooltip
                 $(function() {
@@ -79,7 +80,7 @@
                 });
                 //###### the barchart ########
                 var selected_sim = {{similarity}};
-                var margin = {top: 20, right: 20, bottom: 30, left: 40},
+                var margin = {top: 20, right: 20, bottom: 50, left: 40},
                     width = 500 - margin.left - margin.right,
                     height = 220 - margin.top - margin.bottom;
 
@@ -89,22 +90,32 @@
                 var y = d3.scale.linear()
                     .range([height, 0]);
 
-                var xAxis = d3.svg.axis()
-                    .scale(x)
-                    .orient("bottom");
 
-                var yAxis = d3.svg.axis()
-                    .scale(y)
-                    .orient("left")
-                    .ticks(20, '%');
+             var formatLabel = function(d) {
+                    var left = Math.ceil((d-0.1)*10) / 10;
+                    var right = Math.ceil((parseFloat(d) + 0.1) * 10)/10;
+                    var full = left + "-" + right;
+                    return (full);
+                 }
 
-                var svg = d3.select("#chart").append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
+             var xAxis = d3.svg.axis()
+                 .scale(x)
+                 .orient("bottom")
+                 .tickFormat(formatLabel);
+                
+
+             var yAxis = d3.svg.axis()
+                 .scale(y)
+                 .orient("left")
+                 .ticks(20, '%');
+
+             var svg = d3.select("#chart").append("svg")
+                 .attr("width", width + margin.left + margin.right)
+                 .attr("height", height + margin.top + margin.bottom)
                   .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                d3.csv("{% static 'files/histo' %}", type, function(error, data) {
+                d3.csv("{% static 'files/histogram' %}", type, function(error, data) {
 
                   x.domain(data.map(function(d) { return d.bucket; }));
                   y.domain([0, d3.max(data, function(d) { return d.value; })]);
@@ -112,17 +123,19 @@
                   svg.append("g")
                       .attr("class", "x axis")
                       .attr("transform", "translate(0," + height + ")")
-                      .call(xAxis);
+                      .call(xAxis)
+                      .selectAll("text")  
+                          .style("text-anchor", "end")
+                          .attr("dx", "-.8em")
+                          .attr("dy", ".15em")
+                          .attr("transform", function(d) {
+                                          return "rotate(-65)" 
+                              });
+
 
                   svg.append("g")
                       .attr("class", "y axis")
-                      .call(yAxis)
-                      .append("text")
-                      .attr("transform", "rotate(-90)")
-                      .attr("y", 10)
-                      .attr("dy", ".71em")
-                      .style("text-anchor", "end")
-                      .text("Similarity");
+                      .call(yAxis);
 
                   svg.selectAll(".bar")
                       .data(data)
@@ -144,7 +157,31 @@
                 function type(d) {
                   d.value = +d.value; // coerce to number
                   return d;
+
                 }
+
+                //message boxes to explain the file formats.
+                $( ".dialog" ).dialog({ 
+                    resizable: false,
+                    autoOpen: false ,
+                    draggable: false,
+                    width: 500,
+                    maxWidth: 300,
+                    minWidth: 300,
+                    buttons: [
+                     {
+                         text: "Close",
+                         click: function() {
+                             $( this ).dialog( "close" );
+                         }
+                     }
+                     ]
+                });
+
+                //open dialog for explanation about the chart.
+                $( "#chart_explanation" ).click(function() {
+                    $( "#dialog_chart_explanation").dialog( "open" );
+                });
         });
 
 
@@ -176,6 +213,9 @@
                                         </nav>
 
                                         <footer>
+                                                <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" /></a>
+                                                <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" /></a>
+
                                                 <ul class="icons">
                                                         <li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
                                                 </ul>
@@ -198,7 +238,7 @@
                                                                                         <td >
                                                                                             <a href="#first_disease">{{ name_disease_A }} ({{disease_A}})</a> 
                                                                                         </td>
-                                                                                        <td rowspan="2" style="vertical-align:middle; width:30%;"> <h4> {{similarity}} <h4></td>
+                                                                                        <td rowspan="2" style="vertical-align:middle; width:27%;"> <h4> {{similarity}} ({{percentile}} percentile) <h4></td>
                                                                                     </tr>
                                                                                     <tr>
                                                                                         <td >
@@ -209,6 +249,11 @@
                                                                         </table>
                                                                         </div>
                                                                 <div id = "chart" class="chart" ></div>
+                                                                <p>
+                                                                    This is a histogram of the similarity scores. The height of the bar represents the
+                                                                    percentage of disease pairs with a similarity score in the corresponding range. 
+                                                                    The diseases you looked for are in the red bar.
+                                                                <p>
                                                             </header>
                                                         </div>
                                                 </section>
@@ -216,7 +261,8 @@
                                                 <section id="first_disease">
                                                         <div class="container">
                                                             <h4> {{name_disease_A}} ({{disease_A}})
-                                                                <a href="{% url 'explore' disease_A %}" target="_blank"><i class="fa fa-binoculars" title="Click to explore"></i></a>
+                                                                <a href="{% url 'explore' disease_A %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
+                                                                <a href="http://www.omim.org/{{disease_A}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             </h4>
                                                                <h5>MeSH terms</h5>
                                                                {% for mesh in A_mesh %}
@@ -238,7 +284,8 @@
                                                 <section id="second_disease">
                                                         <div class="container">
                                                             <h4>{{name_disease_B}} ({{disease_B}}) 
-                                                                <a href="{% url 'explore' disease_B %}" target="_blank"><i class="fa fa-binoculars" title="Click to explore"></i></a>
+                                                                <a href="{% url 'explore' disease_B %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
+                                                                <a href="http://www.omim.org/{{disease_B}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             <h4>
                                                                <h5>MeSH terms</h5>
                                                                {% for mesh in B_mesh %}

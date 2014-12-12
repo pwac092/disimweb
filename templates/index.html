@@ -30,6 +30,11 @@
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
 	</head>
+    <style>
+        .hover_change{
+             cursor: pointer; cursor: hand;
+        }
+    </style>
 
 <script>
 
@@ -125,6 +130,37 @@ $(document).ready(function() {
         return false;
     });
 
+
+    //message boxes to explain the file formats.
+    $( ".dialog" ).dialog({ 
+        resizable: false,
+        autoOpen: false ,
+        draggable: false,
+        width: 500,
+        maxWidth: 300,
+        minWidth: 300,
+        buttons: [
+         {
+             text: "Close",
+             click: function() {
+                 $( this ).dialog( "close" );
+             }
+         }
+         ]
+    });
+
+    $( "#triplet_file" ).click(function() {
+        $( "#dialog_triplet_format" ).dialog( "open" );
+    });
+
+    $( "#matrix_file" ).click(function() {
+        $( "#dialog_matrix_format" ).dialog( "open" );
+    });
+
+    $( "#mimmesh_file" ).click(function() {
+        $( "#dialog_mim_to_mesh").dialog( "open" );
+    });
+
 });
 </script>
 
@@ -147,7 +183,11 @@ $(document).ready(function() {
                             <li><a href="#five">Acknowledgments</a></li>
 						</ul>
 					</nav>
-					<footer>
+                    <footer>
+                        <div id="logo_inst">
+                            <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" /></a>
+                            <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" /></a>
+                        </div>
 						<ul class="icons">
 							<li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
 						</ul>
@@ -186,7 +226,7 @@ $(document).ready(function() {
                                                             <h3>Search similarities</h3>
                                                             <p>Search all available diseases. We cover 7545 diseaes in OMIM, which amouts to 
                                                             97% of the entire dataset. <br/>
-                                                             You can start typing the name of the diseases or the MIM number, and then
+                                                             You can start typing the name of the disease, and then
                                                              select the one you want from the choices available. Once the 'Search' button is pressed, we will 
                                                              redirect you to the results page.</p>
                                                         <form id="searchForm">
@@ -207,12 +247,12 @@ $(document).ready(function() {
 							<div class="container">
 								<h3>Explore!</h3>
                                                                 <p> We have developed a way to explore a diseases' neighbourhood. Select the 
-                                                                disease you want by typing its name or MIM number, and select one from the 
+                                                                disease you want by typing its name, and select one from the 
                                                                 dropdown list<br/>
                                                                 After you click 'Explore' we will redirect you to the result page, where 
                                                                 further exploration is possible</p>
                                                             <form id="exploreForm">
-                                                                <input class = "autocomplete_box" id="disease_explore" required="" placeholder="MIM number or disease name" name="disease_explore" type="text" size="40"/>
+                                                                <input class = "autocomplete_box" id="disease_explore" required="" placeholder="Disease name" name="disease_explore" type="text" size="40"/>
                                                                 <input id="disease_explore_hidden"  type="hidden"/>
                                                                 <br/>
                                                                 <input type="submit" value="Explore the neighbourhood"/>
@@ -225,30 +265,43 @@ $(document).ready(function() {
 						<section id="four">
                                         <div class="container">
                                             <h3>Download</h3>
-                                            <p> All the data used to generate the similarity matrices is available. We provide
-                                            two formats for the similarity matrix
-                                            <ul>
-                                                <li>A triplet form, in which the first two columns represent the diseases and the third 
-                                                column the similarity score</li>
-                                                <li>A matrix form, where every cell (i,j) corresponds to the similarity value of the 
-                                                diseases i and diseae j. The file header provides the disease ordering in order 
-                                                to reference the correct row and column.
-                                            </ul>
-                                            </p>
-                                            <p>The MIM2MeSH file contains the mapping obtained through the publications associated
-                                            to each disease in OMIM</p>
+                                            
 
                                             <ul class="fa-ul">
-                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="#">Matrix similarity file</a></li>
-                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="#">Triplet similarity file</a></li>
-                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="#">MIM to MeSH mapping</a></li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/combined_similarity_matrix.tsv">Disease similarity file in matrix form</a> <i id = "matrix_file"class ="fa fa-question fa-border hover_change"></i> </li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/combined_similarity_triplet.tsv">Disease similarity file in triplet form</a> <i id = "triplet_file" class ="fa fa-question fa-border hover_change"></i> </li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/mim2mesh.tsv">OMIM to MeSH mapping</a><i id = "mimmesh_file"class ="fa fa-question fa-border hover_change"></i> </li>
                                             </ul>
 
-                                    </ul>
                                             This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
                                             <p>
-                                            The source code for the disease simiarity browser is available through <i class="fa fa-git"></i><a href="
+                                            The source code for the disease simiarity browser is available through 
+                                            <a href="https://github.com/pwac092/disimweb">GitHub repository.</a>
                                             </p>
+                                            <div class="dialog" id="dialog_matrix_format" title="Matrix file">
+                                                The matrix file presents all results in a square real marix. Every 
+                                                row and every column corresponds to a disease in OMIM. The corresponding 
+                                                cell between a row and a column contains a real value which represents the 
+                                                similarity between the respective diseases.
+                                            </div>
+                                            <div class="dialog" id="dialog_triplet_format" title="Triplet file">
+                                                The list file shows the similarity between two elements by pairing them 
+                                                up one by one. Every line consists of three columns. 
+                                                In case you selected a genewise calculation:
+                                                <ul>
+                                                    <li> Column 1 are UniProt ids </li>
+                                                    <li> Column 2 are UniProt ids </li>
+                                                    <li> Column 3 contains the value representing the similarity between 
+                                                    the elements in column 1 and column 2</li>
+                                                </ul>
+                                            </div>
+                                            <div class="dialog" id="dialog_mim_to_mesh" title="OMIM to MeSH mapping">
+                                                The OMIM to MeSH file is a tab separated file in which the first column
+                                                is the OMIM disease identifier and the remaining columns are the MeSH
+                                                terms unique identifiers assigned to it.
+                                            </div>
+                                    </div>
+
 
                         </section>
 
