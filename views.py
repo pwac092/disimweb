@@ -151,12 +151,12 @@ def getNeighbourhood_ajax(request, disease=None):
     edges = list()
     direct_k_most = [(i.omim2, i.similarity) for i in similarityScores.objects.filter(omim1__exact=disease).order_by('-similarity')[:int(30)]]
     #append the target node.
-    details = get_object_or_404(omim_details, omim__exact=disease)
+    details = get_object_or_404(omim_details, omim__exact = disease)
     nodes.append({'data': { 'id' :str(disease) , 'level': 290, 'colour': '#FFFFF', 'title': details.title}})
     for (j,i) in enumerate(direct_k_most):
         if str(disease) != str(i[0]):
             details = get_object_or_404(omim_details, omim__exact=str(i[0]))
-            nodes.append({'data': { 'id' : i[0], 'level' : 160, 'colour': '#B3767E', 'title': details.title}})
+            nodes.append({'data': { 'id' : i[0], 'level' : 160, 'title': details.title}})
             edges.append({ 'data':{ 'id': str(disease)+"_"+str(i[0]), 'similarity': float(i[1]), 'colour' : passThroughSigmoid((float(i[1]))), 'source': str(disease), 'target': str(i[0])}})
 
     ##get the 10 most similar neighbours of each of the 50 original neighbours
@@ -168,7 +168,7 @@ def getNeighbourhood_ajax(request, disease=None):
         for (index,pair) in enumerate(second_k_most):
             if str(neighbour_disease) != str(pair[0]):
                 details = get_object_or_404(omim_details, omim__exact=str(pair[0]))
-                nodes.append({'data': {'id' : str(pair[0]), 'level' : 50 - ((index%2) * 40), 'colour': '#B3767E', 'title': details.title}})
+                nodes.append({'data': {'id' : str(pair[0]), 'level' : 50 - ((index%2) * 40), 'title': details.title}})
                 edges.append({ 'data':{'id': str(neighbour_disease)+"_"+str(pair[0]), 'similarity' : float(pair[1]), 'colour': passThroughSigmoid(float(pair[1])), 'source': str(neighbour_disease), 'target': str(pair[0])}})
     ##set the json data to use
     final_set = defaultdict()

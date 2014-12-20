@@ -5,10 +5,10 @@
         html5up.net | @n33co
         Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html>
+<html lang="en">
         <head>
                 <title>Ontological analysis of OMIM phenotypes</title>
-                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                <meta charset="utf-8">
                 <meta name="description" content="" />
                 <meta name="keywords" content="" />
                 <!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
@@ -34,6 +34,16 @@
 
     <!-- small styling for the graph -->
     <style>
+
+    .center{
+        text-align:center;
+    }
+
+    .hover_change{
+         cursor: pointer; cursor: hand;
+         float:left;
+    }
+
       #graph{
           width: 1024px;
           height: 700px;
@@ -60,9 +70,9 @@
 
             //what to do when the buttons are pressed.
             $("#compare").click(function (){
-                if  (query_disease)
+                if  (query_disease_mim)
                 {
-                    var win = window.open('http://www.paccanarolab.org/disimweb/score/{{chosen_disease_mim}}/'+query_disease+ '/', '_blank');
+                    var win = window.open('http://www.paccanarolab.org/disimweb/score/{{chosen_disease_mim}}/'+query_disease_mim+ '/', '_blank');
                     if(win){
                         //Browser has allowed it to be opened
                        win.focus();
@@ -277,8 +287,8 @@
                                 </nav>
                                 <footer>
                         <div id="logo_inst">
-                            <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" /></a>
-                            <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" /></a>
+                            <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" alt="RHUL logo"/></a>
+                            <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" alt="Paccanarolab logo"/></a>
                         </div>
                                         <ul class="icons">
                                                 <li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
@@ -293,13 +303,13 @@
                                                         <table class="alt">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td rowspan="2" style="vertical-align:middle; width:10%;"><center><i id="compare" class="fa fa-compress fa-3x" title='Click here to open a new tab and compare both diseases'></i></center></td>
+                                                                    <td rowspan="2" style="vertical-align:middle; width:10%;"><i id="compare" class="fa fa-compress fa-3x hover_change center" title='Click here to open a new tab and compare both diseases'></i></td>
                                                                     <td><input id = "pivot_disease" size = "84" style="border:none;" disabled/> </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td >
                                                                         <div id="new_disease">
-                                                                            <i id="explore" class="fa fa-binoculars" title='Click to explore the neighbourhood of this disease'></i>
+                                                                            <i id="explore" class="fa fa-binoculars hover_change" title='Click to explore the neighbourhood of this disease'></i>
                                                                             <input id = "query_disease" size = "84" style="border:none;"/> 
                                                                         </div>
                                                                     </td>

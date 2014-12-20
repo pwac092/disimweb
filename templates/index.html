@@ -5,10 +5,10 @@
 	html5up.net | @n33co
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html>
+<html lang="en">
 	<head>
-		<title>Ontological analysis of OMIM phenotypes</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>Ontological analysis of OMIM phenotypes</title>
+        <meta charset="utf-8">
 		<meta name="description" content="" />
 		<meta name="keywords" content="" />
 		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
@@ -29,148 +29,149 @@
                 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
+        <style>
+            .hover_change{
+                 cursor: pointer; cursor: hand;
+            }
+            .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
+        </style>
+
+        <script>
+
+        $(document).ready(function() {
+
+                    $( "#diseaseA_input" ).autocomplete({ 
+                        "delay": 0, 
+                        "minLength": 2, 
+                        "select": function( event, ui ) {
+                            $("#diseaseA_hidden" ).val( ui.item.value);
+                            $("#diseaseA_input" ).val( ui.item.label);
+                            return false;
+                        },
+                        "source": function(request, response) { 
+                            $.ajax({ 
+                                url: "{% url 'get_entities' %}",  
+                                dataType: "json", 
+                                data: { 
+                                    term: request.term, 
+                                }, 
+                                success: function(data) { 
+                                    response(data); 
+                                } ,
+                                error: function(data, status, xhr) {
+                                    console.log(data);
+                                    alert('Something has gone wrong. Please click OK and try again');
+                                },
+                            }); 
+                        }, 
+
+                    }); 
+
+                    $( "#diseaseB_input" ).autocomplete({ 
+                        "delay": 0, 
+                        "minLength": 2, 
+                        "select": function( event, ui ) {
+                            $("#diseaseB_hidden" ).val(ui.item.value);
+                            $("#diseaseB_input" ).val(ui.item.label);
+                            return false;
+                        },
+                        "source": function(request, response) { 
+                            $.ajax({ 
+                                url: "{% url 'get_entities' %}",  
+                                dataType: "json", 
+                                data: { 
+                                    term: request.term, 
+                                }, 
+                                success: function(data) { 
+                                    response(data); 
+                                },
+                                error: function(data, status, xhr) {
+                                    console.log(data);
+                                    alert('Something has gone wrong. Please click OK and try again');
+                                },
+                            }); 
+                        }, 
+                    }); 
+
+                    $( "#disease_explore" ).autocomplete({ 
+                        "delay": 0, 
+                        "minLength": 2, 
+                        "select": function( event, ui ) {
+                            $("#disease_explore_hidden" ).val( ui.item.value);
+                            $("#disease_explore" ).val( ui.item.label);
+                            return false;
+                        },
+                        "source": function(request, response) { 
+                            $.ajax({ 
+                                url: "{% url 'get_entities' %}",  
+                                dataType: "json", 
+                                data: { 
+                                    term: request.term, 
+                                }, 
+                                success: function(data) { 
+                                    response(data); 
+                                },
+                                error: function(data, status, xhr) {
+                                    console.log(data);
+                                    alert('Something has gone wrong. Please click OK and try again');
+                                },
+                            }); 
+                        }, 
+                    }); 
+            
+            $("#searchForm").submit(function(e){
+                window.location.href = "/disimweb/score/"+$("#diseaseA_hidden").val()+"/"+$("#diseaseB_hidden").val();
+                return false;
+            });
+
+            $("#exploreForm").submit(function(e){
+                var url = "{% url 'explore' 999999 %}".replace (999999, $("#disease_explore_hidden").val());
+                window.location.href = url;
+                return false;
+            });
+
+
+            //message boxes to explain the file formats.
+            $( ".dialog" ).dialog({ 
+                resizable: false,
+                autoOpen: false ,
+                draggable: false,
+                width: 500,
+                maxWidth: 300,
+                minWidth: 300,
+                buttons: [
+                 {
+                     text: "Close",
+                     click: function() {
+                         $( this ).dialog( "close" );
+                     }
+                 }
+                 ]
+            });
+
+            $( "#triplet_file" ).click(function() {
+                $( "#dialog_triplet_format" ).dialog( "open" );
+            });
+
+            $( "#matrix_file" ).click(function() {
+                $( "#dialog_matrix_format" ).dialog( "open" );
+            });
+
+            $( "#mimmesh_file" ).click(function() {
+                $( "#dialog_mim_to_mesh").dialog( "open" );
+            });
+
+        });
+        </script>
+
 	</head>
-    <style>
-        .hover_change{
-             cursor: pointer; cursor: hand;
-        }
-    </style>
-
-<script>
-
-$(document).ready(function() {
-
-            $( "#diseaseA_input" ).autocomplete({ 
-                "delay": 0, 
-                "minLength": 2, 
-                "select": function( event, ui ) {
-                    $("#diseaseA_hidden" ).val( ui.item.value);
-                    $("#diseaseA_input" ).val( ui.item.label);
-                    return false;
-                },
-                "source": function(request, response) { 
-                    $.ajax({ 
-                        url: "{% url 'get_entities' %}",  
-                        dataType: "json", 
-                        data: { 
-                            term: request.term, 
-                        }, 
-                        success: function(data) { 
-                            response(data); 
-                        } ,
-                        error: function(data, status, xhr) {
-                            console.log(data);
-                            alert('Something has gone wrong. Please click OK and try again');
-                        },
-                    }); 
-                }, 
-
-            }); 
-
-            $( "#diseaseB_input" ).autocomplete({ 
-                "delay": 0, 
-                "minLength": 2, 
-                "select": function( event, ui ) {
-                    $("#diseaseB_hidden" ).val(ui.item.value);
-                    $("#diseaseB_input" ).val(ui.item.label);
-                    return false;
-                },
-                "source": function(request, response) { 
-                    $.ajax({ 
-                        url: "{% url 'get_entities' %}",  
-                        dataType: "json", 
-                        data: { 
-                            term: request.term, 
-                        }, 
-                        success: function(data) { 
-                            response(data); 
-                        },
-                        error: function(data, status, xhr) {
-                            console.log(data);
-                            alert('Something has gone wrong. Please click OK and try again');
-                        },
-                    }); 
-                }, 
-            }); 
-
-            $( "#disease_explore" ).autocomplete({ 
-                "delay": 0, 
-                "minLength": 2, 
-                "select": function( event, ui ) {
-                    $("#disease_explore_hidden" ).val( ui.item.value);
-                    $("#disease_explore" ).val( ui.item.label);
-                    return false;
-                },
-                "source": function(request, response) { 
-                    $.ajax({ 
-                        url: "{% url 'get_entities' %}",  
-                        dataType: "json", 
-                        data: { 
-                            term: request.term, 
-                        }, 
-                        success: function(data) { 
-                            response(data); 
-                        },
-                        error: function(data, status, xhr) {
-                            console.log(data);
-                            alert('Something has gone wrong. Please click OK and try again');
-                        },
-                    }); 
-                }, 
-            }); 
-    
-    $("#searchForm").submit(function(e){
-        window.location.href = "/disimweb/score/"+$("#diseaseA_hidden").val()+"/"+$("#diseaseB_hidden").val();
-        return false;
-    });
-
-    $("#exploreForm").submit(function(e){
-        var url = "{% url 'explore' 999999 %}".replace (999999, $("#disease_explore_hidden").val());
-        window.location.href = url;
-        return false;
-    });
-
-
-    //message boxes to explain the file formats.
-    $( ".dialog" ).dialog({ 
-        resizable: false,
-        autoOpen: false ,
-        draggable: false,
-        width: 500,
-        maxWidth: 300,
-        minWidth: 300,
-        buttons: [
-         {
-             text: "Close",
-             click: function() {
-                 $( this ).dialog( "close" );
-             }
-         }
-         ]
-    });
-
-    $( "#triplet_file" ).click(function() {
-        $( "#dialog_triplet_format" ).dialog( "open" );
-    });
-
-    $( "#matrix_file" ).click(function() {
-        $( "#dialog_matrix_format" ).dialog( "open" );
-    });
-
-    $( "#mimmesh_file" ).click(function() {
-        $( "#dialog_mim_to_mesh").dialog( "open" );
-    });
-
-});
-</script>
-
 	<body>
 		<div id="wrapper">
 
 			<!-- Header -->
 				<section id="header" class="skel-layers-fixed">
 					<header>
-                                        <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="" /></span>
+                                        <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="DisimWeb logo" /></span>
 						<h1 id="logo"><a href="#">Disimweb</a></h1>
 						<p>A disease similarity browser</p>
 					</header>
@@ -185,8 +186,8 @@ $(document).ready(function() {
 					</nav>
                     <footer>
                         <div id="logo_inst">
-                            <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" /></a>
-                            <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" /></a>
+                            <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" alt="RHUL logo"/></a>
+                            <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" alt="Paccanarolab logo"/></a>
                         </div>
 						<ul class="icons">
 							<li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
@@ -203,20 +204,33 @@ $(document).ready(function() {
 								<header class="major">
 									<h2>An ontological approach to disease similarities</h2>
 								</header>
-                                                                <p> Our similarity browser provides an intuitive interface to access our 
-                                                                disease similarity calculations. The result of a query is a number that 
-                                                                quantifies how similar two disease are at a molecular level while exclusively 
-                                                                using phenotypic information. </p>
-                                                                <p>  By mining the publications related to each OMIM record, we can use the high 
-                                                                quality descriptors the MeSH vocabulary provides to describe the publications. Combining 
-                                                                these data with the PaccanaroLab expertise in semantic similarity calculations enables 
-                                                                us to take full advantage of MeSH's high quality ontological structure and provide a very 
-                                                                accurate and highly covering disease similarity measure.</p>
-                                                                <p>
-                                                                If you found our data useful, please cite:<br/>
-                                                                Measuring disease similarity through ontological analysis of phenotypes<br/>
-                                                                Horacio Caniza, Alfonso E. Romero, Alberto Paccanaro. 
-                                                                </p>
+                                <p> 
+                                We have developed a method to quantify how similar 
+                                two disease are at a molecular level while exclusively 
+                                using phenotypic information. 
+                                </p>
+                                <p>  
+                                We can think of diseases as perturbations in the underlying
+                                molecular. Identifying the location of these perturbations
+                                is fundamental for the discovery of disease-causing genes
+                                and the repurposing of drugs.
+                                However, molecular data is scarce. We lack molecular-level knowledge for 
+                                most diseases, but phenotypic descriptions are abundant and rich.
+                                Since similar diseases are related at a molecular level, 
+                                accurately quantifying similarity between diseases can help
+                                "locate" the disease-causing perturbations.
+                                <p>
+                                We have developed a similarity measure that takes 
+                                advantage of the abundant phenotype data, that accurately
+                                quantifies similarity between hereditable diseases.
+                                </p>
+
+                    <p>
+                    If you found our data useful, please cite:<br/>
+                    Measuring disease similarity through ontological analysis of phenotypes<br/>
+                    Horacio Caniza, Alfonso E. Romero, Alberto Paccanaro. 
+                    </p>
+
 							</div>
 						</section>
 						
@@ -224,11 +238,13 @@ $(document).ready(function() {
 						<section id="two">
 							<div class="container">
                                                             <h3>Search similarities</h3>
-                                                            <p>Search all available diseases. We cover 7545 diseaes in OMIM, which amouts to 
-                                                            97% of the entire dataset. <br/>
-                                                             You can start typing the name of the disease, and then
-                                                             select the one you want from the choices available. Once the 'Search' button is pressed, we will 
-                                                             redirect you to the results page.</p>
+                                            <p>Search all available diseases. 
+                                            We cover 7.545 diseaes in OMIM, 
+                                            which amouts to 97% of the entire dataset. <br/>
+                                            You can start typing the name of the disease, and then select 
+                                            the one you want from the choices available. Once the 
+                                            'Search' button is pressed, we will redirect 
+                                            you to the results page.</p>
                                                         <form id="searchForm">
                                                             <input class = "autocomplete_box" id="diseaseA_input"  required="" placeholder="Disease name" name="diseaseA_input" type="text" size="40"/>
                                                             <br/>
@@ -268,9 +284,9 @@ $(document).ready(function() {
                                             
 
                                             <ul class="fa-ul">
-                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/combined_similarity_matrix.tsv">Disease similarity file in matrix form</a> <i id = "matrix_file"class ="fa fa-question fa-border hover_change"></i> </li>
-                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/combined_similarity_triplet.tsv">Disease similarity file in triplet form</a> <i id = "triplet_file" class ="fa fa-question fa-border hover_change"></i> </li>
-                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/mim2mesh.tsv">OMIM to MeSH mapping</a><i id = "mimmesh_file"class ="fa fa-question fa-border hover_change"></i> </li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/combined_similarity_matrix.tsv">Disease similarity file in matrix form</a> <i id="matrix_file" class ="fa fa-question fa-border hover_change"></i> </li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/combined_similarity_triplet.tsv">Disease similarity file in triplet form</a> <i id="triplet_file" class="fa fa-question fa-border hover_change"></i> </li>
+                                                <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/mim2mesh.tsv">OMIM to MeSH mapping</a><i id="mimmesh_file" class ="fa fa-question fa-border hover_change"></i> </li>
                                             </ul>
 
                                             This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
@@ -289,8 +305,8 @@ $(document).ready(function() {
                                                 up one by one. Every line consists of three columns. 
                                                 In case you selected a genewise calculation:
                                                 <ul>
-                                                    <li> Column 1 are UniProt ids </li>
-                                                    <li> Column 2 are UniProt ids </li>
+                                                    <li> Column 1 are MIM numbers </li>
+                                                    <li> Column 2 are MIM numbers </li>
                                                     <li> Column 3 contains the value representing the similarity between 
                                                     the elements in column 1 and column 2</li>
                                                 </ul>
@@ -327,6 +343,7 @@ $(document).ready(function() {
                                     </div>
                             </section>
 			
+		</div>
 		</div>
 	</body>
 </html>

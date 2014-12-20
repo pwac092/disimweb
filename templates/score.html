@@ -5,10 +5,10 @@
         html5up.net | @n33co
         Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html>
+<html lang="en">
         <head>
-                <title>Ontological analysis of OMIM phenotypes</title>
-                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+            <title>Ontological analysis of OMIM phenotypes</title>
+            <meta charset="utf-8">
                 <meta name="description" content="" />
                 <meta name="keywords" content="" />
                 <!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
@@ -137,16 +137,22 @@
                       .attr("class", "y axis")
                       .call(yAxis);
 
+
+
                   svg.selectAll(".bar")
                       .data(data)
                       .enter().append("rect")
-                      .attr("class", "bar")
+                      .style("class", "bar")
                       .style("fill", function(d) { 
-                              if (d.bucket > selected_sim - 0.1 && d.bucket< selected_sim + 0.1)
-                              {
-                                return "brown";
-                              }
-                              return "steelblue"; 
+                          if (d.bucket > selected_sim - 0.1 && d.bucket< selected_sim + 0.1)
+                          {
+                               svg.append("circle")
+                                  .attr("cx", x(d.bucket) + x(0.1)-2)
+                                  .attr("cy", y(d.value) - 25).attr("r", 4)
+                                  .style("fill", 'brown');
+                               return "brown";
+                          }
+                          return "steelblue"; 
                       })
                       .attr("x", function(d) { return x(d.bucket); })
                       .attr("width", x.rangeBand())
@@ -154,6 +160,7 @@
                       .attr("height", function(d) { return height - y(d.value); });
 
                 });
+
                 function type(d) {
                   d.value = +d.value; // coerce to number
                   return d;
@@ -213,9 +220,11 @@
                                         </nav>
 
                                         <footer>
-                                                <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" /></a>
-                                                <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" /></a>
+                                                <div id="logo_inst">
 
+                                                <a href="http://www.cs.rhul.ac.uk"><img src="{% static 'images/rhullogo.png' %}" alt="RHUL logo"/></a>
+                                                <a href="http://www.paccanarolab.org"><img src="{% static 'images/paccanarolab.png' %}" alt="Paccanarolab logo"/></a>
+                                                </div>
                                                 <ul class="icons">
                                                         <li><a href="mailto:support@paccanarolab.org" class="icon fa-envelope"><span class="label">Email</span></a></li>
                                                 </ul>
@@ -238,7 +247,7 @@
                                                                                         <td >
                                                                                             <a href="#first_disease">{{ name_disease_A }} ({{disease_A}})</a> 
                                                                                         </td>
-                                                                                        <td rowspan="2" style="vertical-align:middle; width:27%;"> <h4> {{similarity}} ({{percentile}} percentile) <h4></td>
+                                                                                        <td rowspan="2" style="vertical-align:middle; width:27%;"> <h4> {{similarity}} ({{percentile}} percentile) </h4></td>
                                                                                     </tr>
                                                                                     <tr>
                                                                                         <td >
@@ -262,13 +271,13 @@
                                                         <div class="container">
                                                             <h4> {{name_disease_A}} ({{disease_A}})
                                                                 <a href="{% url 'explore' disease_A %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
-                                                                <a href="http://www.omim.org/{{disease_A}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
+                                                                <a href="http://www.omim.org/{{disease_A}}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             </h4>
                                                                <h5>MeSH terms</h5>
                                                                {% for mesh in A_mesh %}
                                                                <i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>
                                                                {%endfor%}
-                                                               <br/ > <br>
+                                                               <br /> <br />
                                                                <h5>Known proteins </h5>
                                                                 {% if A_proteins|length == 0 %}
                                                                     <h6>No proteins found</h6>
@@ -285,13 +294,13 @@
                                                         <div class="container">
                                                             <h4>{{name_disease_B}} ({{disease_B}}) 
                                                                 <a href="{% url 'explore' disease_B %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
-                                                                <a href="http://www.omim.org/{{disease_B}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
-                                                            <h4>
+                                                                <a href="http://www.omim.org/{{disease_B}}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
+                                                            </h4>
                                                                <h5>MeSH terms</h5>
                                                                {% for mesh in B_mesh %}
                                                                    <i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>
                                                                {%endfor%}
-                                                               <br/ > <br>
+                                                               <br /> <br />
                                                                <h5>Known proteins</h5>
                                                                 {% if B_proteins|length == 0 %}
                                                                     <h6>No proteins found</h6>
