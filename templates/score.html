@@ -77,6 +77,13 @@
         <script type = "text/javascript">
 
             $(document).ready(function() {
+                //control the collapsible lists
+                 $('.child').hide();
+
+                 $('.parent').click(function() {
+                         $(this).find('ul').slideToggle();
+                         });
+
                 //start the tooltip
                 $(function() {
                     $( document ).tooltip();
@@ -278,18 +285,23 @@
                                                                 <a href="{% url 'explore' disease_A %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
                                                                 <a href="http://www.omim.org/{{disease_A}}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             </h4>
-                                                               <h5>MeSH terms</h5>
-                                                               {% for mesh in A_mesh %}
-                                                               <!--<i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>-->
-                                                               <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;
+                                                            <h4>MeSH terms <a href="javascript:void(0)" onclick="expandAll()">(expand all)</a></h4>
+                                                               <ul>
+                                                               {% for first_letter, value in A_mesh.items %}
+                                                               <ul class="parent">
+                                                                   <a href="javascript:void(0)">{{first_letter}}</a>
+                                                                    {% for mesh in value %}
+                                                                       <ul class="child" > <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a></ul> 
+                                                                   {% endfor %}
+                                                               </ul>
                                                                {%endfor%}
+                                                               <ul>
                                                                <br /> <br />
                                                                <h5>Known proteins </h5>
                                                                 {% if A_proteins|length == 0 %}
                                                                     <h6>No proteins found</h6>
                                                                 {% else %}
                                                                     {% for row in A_proteins %}
-                                                                    <!--<i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>-->
                                                                     <a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
                                                                     {%endfor%}
                                                                         
@@ -303,18 +315,26 @@
                                                                 <a href="{% url 'explore' disease_B %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
                                                                 <a href="http://www.omim.org/{{disease_B}}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             </h4>
-                                                               <h5>MeSH terms</h5>
-                                                               {% for mesh in B_mesh %}
-                                                               <!--<i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>-->
-                                                                   <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;
+                                                            <h4>MeSH terms <a href="javascript:void(0)" onclick="expandAll()">(expand all)</a></h4>
+                                                               <ul>
+                                                               {% for first_letter, value in B_mesh.items %}
+                                                               <ul class="parent">
+                                                               <a href="javascript:void(0)">{{first_letter}}</a>
+                                                                    {% for mesh in value %}
+                                                                       <ul class="child"> <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a></ul></li>
+                                                                   {% endfor %}
+                                                               </ul>
                                                                {%endfor%}
+                                                               </ul>
+                                                               <!--{% for mesh in B_mesh %}
+                                                               <a target="_blank" href="{{mesh.2}}">{{mesh.1}},{{mesh.0}}</a>&nbsp;&nbsp;
+                                                               {%endfor%}-->
                                                                <br /> <br />
                                                                <h5>Known proteins</h5>
                                                                 {% if B_proteins|length == 0 %}
                                                                     <h6>No proteins found</h6>
                                                                 {% else %}
                                                                     {% for row in B_proteins %}
-                                                                    <!--<i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>-->
                                                                         <a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
                                                                     {%endfor%}
                                                                 {% endif %}

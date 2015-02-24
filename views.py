@@ -59,10 +59,33 @@ def score(request, omim_A, omim_B):
     sim = similarityScores.objects.get(omim1__exact = min(omim_A,omim_B), omim2__exact = max(omim_A,omim_B))
     #get MeSH terms
     #http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term=Sensitivity+and+Specificity&field=entry
-    A_mesh_unique = set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_A)])
-    B_mesh_unique  = set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_B)])
-    A_mesh = [(i,"http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry") for i in A_mesh_unique]
-    B_mesh = [(i,"http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry") for i in B_mesh_unique]
+    A_mesh_unique = sorted(list(set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_A)])))
+
+    A_mesh = dict()
+    for i in A_mesh_unique:
+        try:
+            A_mesh[i[0]]
+        except:
+            A_mesh[i[0]] = list()
+
+        A_mesh[i[0]].append((i, "http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry"))
+
+
+    B_mesh_unique  = sorted(list(set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_B)])))
+
+    B_mesh = dict()
+    for i in B_mesh_unique:
+        try:
+            B_mesh[i[0]]
+        except:
+            B_mesh[i[0]] = list()
+
+        B_mesh[i[0]].append((i, "http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry"))
+
+
+    #A_mesh = [(i[0], i,"http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry") for i in A_mesh_unique]
+    #B_mesh = [(i[0], i,"http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry") for i in B_mesh_unique]
+
     #get proteins
     A_proteins = [i.uniprot_id for i in mimtoprot.objects.filter(omim__exact=omim_A)]
     B_proteins = [i.uniprot_id for i in mimtoprot.objects.filter(omim__exact=omim_B)]

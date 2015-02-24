@@ -375,6 +375,7 @@
                     //draw the colourbar
                     drawColourBar(data['max_sim'], data['min_sim']);
                     $.unblockUI();
+                    console.log(data);
                 },
                 error: function(data, status, xhr) {
                     console.log(data);
@@ -446,6 +447,8 @@
                  //handle the click
                  var mynodes = this.nodes();
                  var myedges = this.edges();
+                 //disable user zoom. Just with the buttons.
+                 this.userZoomingEnabled( false );
 
                  this.panzoom({ })
 
