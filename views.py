@@ -15,52 +15,11 @@ import json, math
 import mimetypes
 import numpy as np
 from collections import defaultdict
+from itertools import combinations
+
 
 def index(request):
     return render(request, 'index.html')
-
-#########################
-# Download              #
-#########################
-
-def respond_as_attachment(request, whatToDownload):
-
-
-    response = prepareFile(whatToDownload)
-
-    response['Content-Type'] = 'text/plain'
-    response['Content-Length'] = str(os.stat(file_path).st_size)
-    response['Content-Encoding'] = '7bit' #this id the default encoding.
-
-    # To inspect details for the below code, see http://greenbytes.de/tech/tc2231/
-    if u'WebKit' in request.META['HTTP_USER_AGENT']:
-        # Safari 3.0 and Chrome 2.0 accepts UTF-8 encoded string directly.
-        filename_header = 'filename=%s' % original_filename.encode('utf-8')
-    elif u'MSIE' in request.META['HTTP_USER_AGENT']:
-        # IE does not support internationalized filename at all.
-        # It can only recognize internationalized URL, so we do the trick via routing rules.
-        filename_header = ''
-    else:
-        # For others like Firefox, we follow RFC2231 (encoding extension in HTTP headers).
-        filename_header = 'filename*=UTF-8\'\'%s' % urllib.quote(original_filename.encode('utf-8'))
-    response['Content-Disposition'] = 'attachment; ' + filename_header
-    return response
-
-def prepareFile(what):
-
-    if what == 1: #"simMatrix":
-        path = '/static/files/combined_similarity_matrix'
-    elif what == 2: #"simTriplet":
-        path = '/static/files/combined_similarity_triplet'
-    elif what == 3: #"omim2mesh":
-        path = '/static/files/mim2mesh'
-    elif what == 4: #"omim2pubmed":
-        path = '/static/files/omim2pubmed'
-
-    fp = open(path, 'rb')
-    response = HttpResponse(fp.read())
-    fp.close()
-    return response
 
 #########################
 # Catch all             #
@@ -122,19 +81,15 @@ def score(request, omim_A, omim_B):
 # Explore neighbourhood #
 #########################
 
-
-
 def explore(request, disease):
     #details = omim_details.objects.get(omim__exact=disease)
     details = get_object_or_404(omim_details, omim__exact=disease)
     (mim, name, prefix) = (details.omim, details.title, details.prefix)
     url = reverse('neighbourhood')
-    return render(request, 'explore.html', {'chosen_disease_mim':mim,'chosen_disease_name':name, 'URL':url, 'omim':disease })
+    url_fill = reverse('fillnetwork')
+    return render(request, 'explore.html', {'chosen_disease_mim':mim,'chosen_disease_name':name, 'URL':url, 'URL_fill':url_fill,'omim':disease })
 
-def passThroughSigmoid(score):
-     return (1.0 / (1.0 + np.exp(-2.5 * score + 5)))
-
-def getNeighbourhood_ajax(request, disease=None):
+def getNeighbourhood_ajax(request, disease=None, max_direct=10, max_indirect=5):
     #json prototype
     #nodes: [
             #{ data: { id: 'a', foo: 3, bar: 5, baz: 7 } },
@@ -147,34 +102,104 @@ def getNeighbourhood_ajax(request, disease=None):
             #]
     #};
 
+    #quick check to verify the limits are not exceeded.
+    if int(max_direct) > 50:
+        max_direct = 50
+    if int(max_indirect) > 20:
+        max_indirect = 20
+
     nodes = list()
     edges = list()
-    direct_k_most = [(i.omim2, i.similarity) for i in similarityScores.objects.filter(omim1__exact=disease).order_by('-similarity')[:int(30)]]
-    #append the target node.
-    details = get_object_or_404(omim_details, omim__exact = disease)
-    nodes.append({'data': { 'id' :str(disease) , 'level': 290, 'colour': '#FFFFF', 'title': details.title}})
-    for (j,i) in enumerate(direct_k_most):
-        if str(disease) != str(i[0]):
-            details = get_object_or_404(omim_details, omim__exact=str(i[0]))
-            nodes.append({'data': { 'id' : i[0], 'level' : 160, 'title': details.title}})
-            edges.append({ 'data':{ 'id': str(disease)+"_"+str(i[0]), 'similarity': float(i[1]), 'colour' : passThroughSigmoid((float(i[1]))), 'source': str(disease), 'target': str(i[0])}})
 
-    ##get the 10 most similar neighbours of each of the 50 original neighbours
-    for (neighbour_disease,sim) in direct_k_most:
+    #store the nodes that were found, to check for double loops.
+    direct_k_most = [(o2, float(s),lca) for o2,s,lca in neighbourhood.objects.filter(omim1=disease).exclude(omim2=disease).order_by('-similarity').values_list('omim2', 'similarity','lca')][:int(max_direct)]
+
+    # we get the titles, for each disease
+    titles = dict(omim_details.objects.values_list('omim', 'title'))
+    
+    #append the pivot disease.
+    nodes.append({'data': { 'id' :str(disease) , 'level': 230, 'colour': '#FFFFF', 'title': titles[str(disease)]}})
+
+    #set weights to store the mininmum and maximum weights. Easier than traversing the entire tree.
+    min_sim = 1000
+    max_sim = -1
+
+    #store the found edges
+    found_edges = set()
+
+    for omim,score, lca in direct_k_most:
+        nodes.append({'data': { 'id' : omim, 'level' : 160, 'title': titles[omim]}})
+        source = str(min(str(disease),str(omim)))
+        target = str(max(str(disease),str(omim)))
+        edges.append({'data':{ 'id': str(disease)+"_"+str(omim), 'similarity': float(score), 'source': source, 'target': target, 'LCA':lca}})
+        found_edges.add((source,target))
+        #store teh similarities
+        min_sim = min(min_sim,float(score)) 
+        max_sim = max(max_sim,float(score)) 
+
+    ##get the 50 most similar neighbours of each of the 50 original neighbours
+    for (direct_neighbour,sim, lca) in direct_k_most:
         #fetch the neighbours
-        second_k_most = [(i.omim2, i.similarity) for i in similarityScores.objects.filter(omim1__exact=neighbour_disease).order_by('-similarity')[:int(5)]]
+        second_k_most = [(o2, float(s),lca) for o2,s,lca in neighbourhood.objects.filter(omim1=direct_neighbour).exclude(omim2=direct_neighbour).order_by('-similarity').values_list('omim2', 'similarity','lca')][:int(max_indirect)]
         #add the current node
-        #nodes.append({'data': { 'id' : str(neighbour_disease) , 'level':'2'}})
-        for (index,pair) in enumerate(second_k_most):
-            if str(neighbour_disease) != str(pair[0]):
-                details = get_object_or_404(omim_details, omim__exact=str(pair[0]))
-                nodes.append({'data': {'id' : str(pair[0]), 'level' : 50 - ((index%2) * 40), 'title': details.title}})
-                edges.append({ 'data':{'id': str(neighbour_disease)+"_"+str(pair[0]), 'similarity' : float(pair[1]), 'colour': passThroughSigmoid(float(pair[1])), 'source': str(neighbour_disease), 'target': str(pair[0])}})
+        index = 0
+        for (omim, score, lca) in second_k_most:
+            source = str(min(str(direct_neighbour),str(omim)))
+            target = str(max(str(direct_neighbour),str(omim)))
+            #check for double loops with the first level and double loops with the pivot disease.
+            if (source,target) not in found_edges:
+                nodes.append({'data': {'id' : str(omim), 'level' : 50 - ((index%2) * 40), 'title': titles[str(omim)]}})
+                edges.append({'data':{'id': str(source) + "_"+target, 'similarity' : float(score), 'source': source, 'target': target, 'LCA':lca}})
+                found_edges.add((source,target))
+                min_sim = min(min_sim,float(score)) 
+                max_sim = max(max_sim,float(score)) 
+            index += 1
+
+    ##we normalise the values. This is to do with the javascript, were the linear mapping does not allow for variable limits, 
+    #so we need everything between 0 and 1.
+    for edge in edges:
+        if max_sim == min_sim:
+            edge['data']['colour'] = 1
+        else:
+            edge['data']['colour'] = (float(edge['data']['similarity']) - min_sim) / (max_sim - min_sim)
     ##set the json data to use
     final_set = defaultdict()
+    #Just "round" the values to the closest decimal. It is just to make it look nicer.
+    final_set['max_sim'] = float(max_sim)
+    final_set['min_sim'] = float(min_sim)
+
     final_set['nodes'] = nodes
     final_set['edges'] = edges
     return HttpResponse(json.dumps(final_set), content_type = "application/json")
+
+def fillNetwork_ajax(request):
+    #get the network
+    network = json.loads(request.read())
+    nodes = [i['data']['id'] for i in network['nodes']]
+    edges = [(min(i['data']['source'],i['data']['target']),max(i['data']['source'],i['data']['target'])) for i in network['edges']]
+    #set weights to store the mininmum and maximum weights. Easier than traversing the entire tree.
+    min_sim = 1000
+    max_sim = -1
+    #look for all the edges that are not in the list of edges.
+    for putative_edge in combinations(nodes, 2):
+        if (min(putative_edge),max(putative_edge)) not in edges and min(putative_edge) != max(putative_edge):
+            #here we fethc this from the database.
+            sim = similarityScores.objects.get(omim1__exact = min(putative_edge), omim2__exact = max(putative_edge))
+            network['edges'].append({'data' : {'id' : str(min(putative_edge))+"_"+str(max(putative_edge)) , 'similarity' : float(sim.similarity), 'source' : min(putative_edge), 'target' : max(putative_edge)}})
+            #max similarity should not change, so we only fetch the min simialrity
+            network['min_sim'] = min(float(network['min_sim']), float(sim.similarity))
+            #add the found edges to avoid double edges.
+            edges.append((min(putative_edge),max(putative_edge)))
+
+    ##we normalise the values. This is to do with the javascript, were the linear mapping does not allow for variable limits, 
+    #so we need everything between 0 and 1.
+    for edge in network['edges']:
+        if network['max_sim'] == network['min_sim']:
+            edge['data']['colour'] = 1
+        else:
+            edge['data']['colour'] = (float(edge['data']['similarity']) - network['min_sim']) / (network['max_sim'] - network['min_sim'])
+
+    return HttpResponse(json.dumps(network), content_type = "application/json")
 
 
 #########################
@@ -187,7 +212,7 @@ def getDetails_ajax(request, omim):
         #get details of disease A
         details = get_object_or_404(omim_details, omim__exact=omim)
         #get MeSH terms
-        disease_mesh = [i.mesh_term for i in mesh.objects.filter(omim__exact=omim)]
+        disease_mesh = set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim)])
         #get proteins
         disease_proteins = [i.uniprot_id for i in mimtoprot.objects.filter(omim__exact=omim)]
         #create json data

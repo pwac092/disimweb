@@ -10,7 +10,7 @@
         <title>Ontological analysis of OMIM phenotypes</title>
         <meta charset="utf-8">
 		<meta name="description" content="" />
-		<meta name="keywords" content="" />
+		<meta name="keywords" content="disease,similarity,phenotype-genotype" />
 		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
                 <script src="{% static 'javascript/jquery.min.js' %} "></script>
                 <script src="{% static 'javascript/jquery-ui.js' %} "></script>
@@ -30,9 +30,10 @@
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
         <style>
-            .hover_change{
-                 cursor: pointer; cursor: hand;
-            }
+    .hover_change{
+         cursor: pointer; cursor: hand;
+         float:left;
+    }
             .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
         </style>
 
@@ -171,7 +172,7 @@
 			<!-- Header -->
 				<section id="header" class="skel-layers-fixed">
 					<header>
-                                        <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="DisimWeb logo" /></span>
+                        <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="DisimWeb logo" /></span>
 						<h1 id="logo"><a href="#">Disimweb</a></h1>
 						<p>A disease similarity browser</p>
 					</header>
@@ -181,7 +182,7 @@
 							<li><a href="#two">Search</a></li>
 							<li><a href="#three">Explore</a></li>
 							<li><a href="#four">Download</a></li>
-                            <li><a href="#five">Acknowledgments</a></li>
+                            <li><a href="#five">About</a></li>
 						</ul>
 					</nav>
                     <footer>
@@ -202,33 +203,42 @@
 						<section id="one">
 							<div class="container">
 								<header class="major">
-									<h2>An ontological approach to disease similarities</h2>
+                                <h2 style = "font-size:2.5em;line-height:1.2em">
+                                        PaccanaroLab's Disease similarity browser
+                                    </h2>
 								</header>
-                                <p> 
-                                We have developed a method to quantify how similar 
-                                two disease are at a molecular level while exclusively 
-                                using phenotypic information. 
-                                </p>
-                                <p>  
-                                We can think of diseases as perturbations in the underlying
-                                molecular. Identifying the location of these perturbations
-                                is fundamental for the discovery of disease-causing genes
-                                and the repurposing of drugs.
-                                However, molecular data is scarce. We lack molecular-level knowledge for 
-                                most diseases, but phenotypic descriptions are abundant and rich.
-                                Since similar diseases are related at a molecular level, 
-                                accurately quantifying similarity between diseases can help
-                                "locate" the disease-causing perturbations.
-                                <p>
-                                We have developed a similarity measure that takes 
-                                advantage of the abundant phenotype data, that accurately
-                                quantifies similarity between hereditable diseases.
-                                </p>
+                                <div style = 'text-align: justify; text-justify: inter-word;'>
+                                    <p style="margin-bottom: 0.5em">
+                                        Great advances have been made over the past decades and we have more information than ever before. This
+                                        vast amount of proteomic data has helped clarify the relationship between a disease phenotype and its causes, to a point
+                                        where it is now clear that a disease is a wider perturbation in the underlying biological networks.
+                                    </p>
+                                    <p style="margin-bottom: 0.5em">
+                                        There is relatively little molecular information about the hereditable diseases described in <a href="http://www.omim.org">OMIM</a>, with 
+                                        very few causal genes identified for most diseases and none for more than 45% of them. On the other hand there is an abundance of 
+                                        phenotype descriptions that, although not well suited for machine processing, provide comprehensive information on the various
+                                        diseases. 
+                                    </p>
+                                    <p style="margin-bottom: 0.5em">
+                                        We designed a method to extract the information contained in <a href="http://www.omim.org">OMIM</a> and, using the structure
+                                        provided by <a href="http://www.nlm.nih.gov/mesh/">MeSH</a>, obtain a single number to characterise the similarity of any two
+                                        genetic diseases.
+                                        Our method is able to integrate the different domains of knowledge contained in MeSH, and we can show that our similarity measure
+                                        reflects the common molecular machinery associated to similar diseases.
+                                    </p>
+                                    <p>
+                                        We  have developed this browser where users can query pairs of diseases or explore a diseases "neighbourhood". 
+                                        We have made all data and code available for <a href="#four">Download</a>.
+                                    </p>
+                                </div>
 
                     <p>
-                    If you found our data useful, please cite:<br/>
-                    Measuring disease similarity through ontological analysis of phenotypes<br/>
-                    Horacio Caniza, Alfonso E. Romero, Alberto Paccanaro. 
+                        If you found our data useful, please cite:<br/>
+                        <strong>
+                            An ontology–based measure of similarity between hereditable disease<br>
+                        </strong>
+                        <i> Horacio Caniza, Alfonso E. Romero and Alberto Paccanaro </i>
+
                     </p>
 
 							</div>
@@ -237,21 +247,19 @@
 					<!-- Two -->
 						<section id="two">
 							<div class="container">
-                                                            <h3>Search similarities</h3>
-                                            <p>Search all available diseases. 
-                                            We cover 7.545 diseaes in OMIM, 
-                                            which amouts to 97% of the entire dataset. <br/>
-                                            You can start typing the name of the disease, and then select 
-                                            the one you want from the choices available. Once the 
-                                            'Search' button is pressed, we will redirect 
-                                            you to the results page.</p>
+                                                            <h3>Search!</h3>
+                                                            <p>
+                                                            Type the name or MIM number of the diseases you want to compare and press
+                                                            'Search' to obtain the results. If you want to test the browser with the provided
+                                                            example, just click the 'Search' button.
+                                                            </p>
                                                         <form id="searchForm">
-                                                            <input class = "autocomplete_box" id="diseaseA_input"  required="" placeholder="Disease name" name="diseaseA_input" type="text" size="40"/>
+                                                            <input class = "autocomplete_box" id="diseaseA_input"  required="" placeholder="Disease name" name="diseaseA_input" type="text" size="40" value="BREAST CANCER(114480)"/>
                                                             <br/>
-                                                            <input class = "autocomplete_box" id="diseaseB_input" required = "" placeholder="Disease name" name="diseaseB_input" type="text" size="40"/>
+                                                            <input class = "autocomplete_box" id="diseaseB_input" required = "" placeholder="Disease name" name="diseaseB_input" type="text" size="40" value="DIABETES MELLITUS, NONINSULIN-DEPENDENT; NIDDM(125853)"/>
                                                             <!--to store the results of the selection-->
-                                                            <input id="diseaseA_hidden"  type="hidden" value=""/>
-                                                            <input id="diseaseB_hidden"  type="hidden" value=""/>
+                                                            <input id="diseaseA_hidden"  type="hidden" value="114480"/>
+                                                            <input id="diseaseB_hidden"  type="hidden" value="125853"/>
                                                             <br/>
                                                             <input type="submit" value="Search"/>
                                                         </form>
@@ -262,14 +270,12 @@
 						<section id="three">
 							<div class="container">
 								<h3>Explore!</h3>
-                                                                <p> We have developed a way to explore a diseases' neighbourhood. Select the 
-                                                                disease you want by typing its name, and select one from the 
-                                                                dropdown list<br/>
-                                                                After you click 'Explore' we will redirect you to the result page, where 
-                                                                further exploration is possible</p>
+                                                                <p> We have developed a way to explore a diseases' "neighbourhood". Select the 
+                                                                disease you want by typing its name or MIM number and click 'Explore'. You can test the 
+                                                                explorer with the provided example by just clicking 'Explore'.</br>
                                                             <form id="exploreForm">
-                                                                <input class = "autocomplete_box" id="disease_explore" required="" placeholder="Disease name" name="disease_explore" type="text" size="40"/>
-                                                                <input id="disease_explore_hidden"  type="hidden"/>
+                                                                <input class = "autocomplete_box" id="disease_explore" required="" placeholder="Disease name" name="disease_explore" type="text" size="40" value="BREAST CANCER(114480)"/>
+                                                                <input id="disease_explore_hidden"  type="hidden" value="114480"/>
                                                                 <br/>
                                                                 <input type="submit" value="Explore the neighbourhood"/>
                                                             </form>
@@ -289,11 +295,6 @@
                                                 <li><i class="fa-li fa fa-download fa-border"></i><a href="http://www.paccanarolab.org/static_content/disease_similarity/mim2mesh.tsv">OMIM to MeSH mapping</a><i id="mimmesh_file" class ="fa fa-question fa-border hover_change"></i> </li>
                                             </ul>
 
-                                            This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
-                                            <p>
-                                            The source code for the disease simiarity browser is available through 
-                                            <a href="https://github.com/pwac092/disimweb">GitHub repository.</a>
-                                            </p>
                                             <div class="dialog" id="dialog_matrix_format" title="Matrix file">
                                                 The matrix file presents all results in a square real marix. Every 
                                                 row and every column corresponds to a disease in OMIM. The corresponding 
@@ -323,12 +324,16 @@
 
 						<section id="five">
                               <div class="container">
-                                    <h3>Acknowledgments</h3>
-                                    <p>
-                                        I would like to thank Dr. Alfonso E. Romero for his help developing this browser. Juan Caceres provided help debugging the 
-                                        JavaScript and HTML.  Mateo Torres provided helped conceptualise the browser and provided feedback once it was completed. 
+                                    <h3>About</h3>
+                                    <p style="margin-bottom: 0.5em">
+                                    This browser was developed by <a href="http://www.cs.rhul.ac.uk/~pwac092/">Horacio Caniza</i></a>. Source code is available
+                                from this <a href="https://github.com/pwac092/disimweb">GitHub repository.</a>
+                                    </p>
+                                    <p style="margin-bottom: 0.5em">
+                                        It benefited greatly from the help provided by <a href="http://www.cs.rhul.ac.uk/~aeromero/">Dr. Alfonso E. Romero</a>
+                                        Juan Caceres provided help debugging the JavaScript and HTML, and Mateo Torres helped conceptualise the 
+                                        browser and provided feedback once it was completed. 
                                     <br>
-                                    <a href="http://www.cs.rhul.ac.uk/~pwac092/">I kinda did the rest <i class="fa fa-smile-o"></i></a>
                                     </p>
                               </div>
                         </section>

@@ -1,4 +1,5 @@
 {%load staticfiles%}
+
 <!DOCTYPE HTML>
 <!--
         Read Only by HTML5 UP
@@ -28,12 +29,19 @@
                 <!-- qtip -->
                 <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
                 <script type="text/javascript" src="{% static 'javascript/cytoscape-qtip.js' %}"></script>
+                <!-- panzoom -->
                 <link rel="stylesheet" href="{% static 'css/panzoom.css' %}">
                 <script type="text/javascript" src="{% static 'javascript/cytoscape.js-panzoom.js' %}"></script>
-                 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+                <!-- d3 -->
+                <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+                <!-- intro.js -->
+                <link href="{% static 'css/introjs.css' %}" rel="stylesheet">
+                <script type="text/javascript" src="{% static 'javascript/intro.js' %}"></script>
+
 
     <!-- small styling for the graph -->
     <style>
+
 
     .center{
         text-align:center;
@@ -41,7 +49,6 @@
 
     .hover_change{
          cursor: pointer; cursor: hand;
-         float:left;
     }
 
       #graph{
@@ -51,16 +58,142 @@
           background-color: #F1F1F0; /*#E1E1E0;*/
           padding: 0;
       }
+
     </style>
 
     <script>
         var cy;
-        var query_disease;
+        //stores the regular network
+        var networkJson;
+        //stores the complete network.
+        var networkJsonFull;
+        var query_disease  = '{{omim}}';
         var URL = '{{URL}}';
+        var URL_fill = '{{URL_fill}}';
+
+           //prepare for the intro js.
+           function startIntro(){
+                var intro = introJs();
+                  intro.setOptions({
+                    steps: [
+                      { 
+                        intro: "Hello! This page allows you to explore the \"neighbourhood\" of a disease. We connect every target disease with the 10 diseases that are most similar to it. In order to provide a wider picture, we connect these 10 diseases to their 5 most similar ones. The size of the network can be modified by the user."
+                      },
+                      {
+                        //pivot disease
+                        element: document.querySelector('#pivot_disease'),
+                        intro: "This text box shows the query disease."
+                      },
+                      {
+                        //clicked disease
+                        element: document.querySelector('#query_disease'),
+                        intro: "This text box shows the disease that was selected by clicking on one the nodes in the network."
+                      },
+                      {
+                        //binoculars
+                        element: document.querySelector('#explore'),
+                        intro: "If you click on this button you will explore the \"neighbourhood\" of the disease in the lower text box."
+                      },
+                      {
+                        //compare icon
+                        element: document.querySelector('#compare'),
+                        intro: "If you click on this button, a new tab will be opened with a detailed comparison of both disease.",
+                        position: 'right'
+                      },
+                      {
+                        //canvas
+                        element: document.querySelector('#graph'),
+                        intro: "This is were the network will be shown. You can click the nodes to select a disease and on the links to display the similarity between the connected diseases. Zoom and pan levels are set with the controls on the top left.",
+                        position: 'top'
+                      },
+                      {
+                        //toggle node labels
+                        element: document.querySelector('#toggle'),
+                        intro: "Check here to hide and show the MIM numbers represented by each node.",
+                        position: 'top'
+                      },
+                      {
+                        //select layout
+                        element: document.querySelector('#layout'),
+                        intro: "Select the layout of the network.",
+                        position: 'top'
+                      },
+                      {
+                        //fill network
+                        element: document.querySelector('#fill_network'),
+                        intro: "Clicking this button will fully connect the newtork. Keep in mind that this will take some time for larger networks.",
+                        position: 'top'
+                      },
+                      {
+                        //check number of neighbours
+                        element: document.querySelector('#network_control'),
+                        intro: "Use these controls to change the number of nodes that will appear in the plot.",
+                        position: 'top'
+                      }
+                    ]
+                  });
+
+                  intro.start();
+              }
+
+            //just something to change the layout of the display.
+            function setLayout()
+            {
+                var which_layout =  $("#change_layout").val(); 
+                var layout;
+
+                if (which_layout == "concentric")
+                {
+                    layout = cy.makeLayout({
+                        name: which_layout,
+                        avoidOverlap: true,
+                        concentric: function(){
+                            return this.data('level');
+                        },
+                        circle: true,
+                        minNodeSpacing: 19, 
+                        padding:2, //padding of the plot with the canvas. 
+                    });
+                }
+                else
+                {
+                    layout = cy.makeLayout({
+                        name: which_layout
+                    });
+                }
+
+                layout.run();
+            }
+
         $( document ).ready(function() {
+            //prepare the modal dialog to verify if the user wants to fill
+            //the network even though it might be a bit too big.
+            $( "#dialog-confirm" ).dialog({
+              resizable: false,
+              dialogClass: "no-close",
+              height:300,
+              width:540,
+              modal: true,
+              autoOpen: false,
+              buttons: {
+                "Plot": function() {
+                      //the user chose to plot the huge network anyway
+                      fillNetwork()
+                      return false;
+                },
+                "Cancel": function() {
+                      //the user decided not to plot anything, so we do nothing.
+                      $( this ).dialog( "close" );
+                      return true;
+                },
+              }
+            });
+
             //load the pivo disease
             $("#pivot_disease").attr("value", "{{ chosen_disease_mim }} - {{ chosen_disease_name }}");
-            requestNeighbourhood(URL+'{{omim}}');
+
+            //construct the request query for the original disease
+            getNetwork(URL + query_disease + "/" + parseFloat($("#direct_value").attr("value")) + "/" + parseFloat($("#indirect_value").attr("value")) + '/');
 
 
             //start the tooltip
@@ -68,11 +201,36 @@
                 $( document ).tooltip();
             });
 
+            //set the layout
+            $("#change_layout").click(function (){
+                setLayout();
+            });
+
+            $("#fill_network").click(function (){
+                //call the ajax with the correct url for the thing.
+                if (parseFloat($("#direct_value").attr("value")) + parseFloat($("#indirect_value").attr("value")) > 25)
+                {
+                    $("#dialog-confirm").dialog("open");
+                }
+                else
+                {
+                    fillNetwork();
+                }
+            });
+
+            //what to do when the redraw network button is clicked.
+            $("#processRedraw").click(function (){
+                //get current limits.
+                direct_limit = parseFloat($("#direct_value").attr("value"))
+                indirect_limit = parseFloat($("#indirect_value").attr("value"))
+                getNetwork(URL + query_disease + "/" + direct_limit + "/" + indirect_limit + "/");
+            });
+
             //what to do when the buttons are pressed.
             $("#compare").click(function (){
-                if  (query_disease_mim)
+                if  (new_query_disease_mim)
                 {
-                    var win = window.open('http://www.paccanarolab.org/disimweb/score/{{chosen_disease_mim}}/'+query_disease_mim+ '/', '_blank');
+                    var win = window.open('http://www.paccanarolab.org/disimweb/score/'+ query_disease + '/'+new_query_disease_mim+ '/', '_blank');
                     if(win){
                         //Browser has allowed it to be opened
                        win.focus();
@@ -82,31 +240,47 @@
                     }
                 }
             });
-
             
-            $("#explore").click(function (){
-                if (query_disease_mim) {
-                    requestNeighbourhood(URL + query_disease_mim);
-                    $("#pivot_disease").attr("value", query_disease_name + "-" + query_disease_mim);
+            //what to do when we click on a node in the network and then click the xplore binoculars.            
+            $("#explore").click(function (){ if (new_query_disease_mim) {
+                    //get current limits.
+                    direct_limit = parseFloat($("#direct_value").attr("value"))
+                    indirect_limit = parseFloat($("#indirect_value").attr("value"))
+                    getNetwork(URL + new_query_disease_mim + "/" + direct_limit + "/" + indirect_limit + "/");
+                    //update the query disease number
+                    query_disease = new_query_disease_mim;
+                    $("#pivot_disease").attr("value", new_query_disease_mim + "-" + new_query_disease_name);
                     $("#query_disease").attr("value", "");
                 }
 
             });
 
-            //draw colorbar
-            var canvas = document.getElementById('colorbar');
-            var context = canvas.getContext('2d');
-            context.rect(0, 0, canvas.width, canvas.height);
-            // add linear gradient
-            var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-            // light blue
-            grd.addColorStop(0, '#FF0000');   
-            // dark blue
-            grd.addColorStop(1, '#0000FF');
-            context.fillStyle = grd;
-            context.fill();
 
-        });
+        }); //document.ready
+
+        
+        function changeNeighbours(which, increment)
+        //inner_value
+        //outer_value
+        {
+            //we have different limits for both sets of neighbours. Either direct or indirect.
+            var current_set_limit = 10;
+            if (which == "direct_value")
+                current_set_limit = 50;
+                
+            //check there is something left at this point.
+            if (increment == -1 && $("#"+which).attr("value") > 0)
+            {
+                $("#"+which).attr("value", parseFloat($("#"+which).attr("value")) + increment);
+                return;
+            }
+            //now check the limits for each box.
+            if (increment == 1 && $("#"+which).attr("value") < current_set_limit)
+            {
+                $("#"+which).attr("value", parseFloat($("#"+which).attr("value")) + increment);
+                return;
+            }
+        }
 
         function toggleLabels()
         {
@@ -121,7 +295,68 @@
             }
         }
 
-        function requestNeighbourhood(request_url)
+        //simple function to produce the colorbar for the plot.
+        function drawColourBar(max_sim, min_sim)
+        {
+            //--------------------
+            //draw colorbar
+            //check if max == min. if this is the case, put all of the same colour.
+            var canvas = document.getElementById('colorbar');
+            var context = canvas.getContext('2d');
+            context.rect(0, 0, canvas.width, canvas.height);
+            // add linear gradient
+            var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+            // red start.
+            grd.addColorStop(0, '#FF0000');   
+            if (max_sim == min_sim)
+            {
+                //stop on red.
+                grd.addColorStop(1, '#FF0000');   
+            }
+            else
+            {
+                //stop on blue.
+                grd.addColorStop(1, '#0000FF');
+            }
+            context.fillStyle = grd;
+            context.fill();
+            //--------------------
+        }
+
+
+        //ajax call to get all links in the network
+        function fillNetwork()
+        {
+              $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: URL_fill,
+                    data: JSON.stringify(networkJson),
+                    beforeSend: function( xhr ) {
+                        $.blockUI({ message: '<h1><img src="{% static 'images/loading.gif' %}"/> <br/> We are creating the network...</h1>' });
+                    },
+                    success: function(data, status, xhr) {
+                        //store the json data because we will need it to complete the network
+                        networkJsonFull = data;
+                        //get the max and min values in the json.
+                        $('#max_sim_value').text(data['max_sim'].toFixed(2));
+                        $('#min_sim_value').text(data['min_sim'].toFixed(2));
+                        //ready.
+                        plotNetwork(data);
+                        drawColourBar(data['max_sim'], data['min_sim']);
+                        $.unblockUI();
+                    },
+                    error: function(data, status, xhr) {
+                        console.log('error');
+                        console.log(data);
+                        $.unblockUI();
+                    },
+                });
+
+        }
+
+        //ajax call to get the regular, non-complete network.
+        function getNetwork(request_url)
         {
             $.ajax({
                 url: request_url,
@@ -130,17 +365,25 @@
                     $.blockUI({ message: '<h1><img src="{% static 'images/loading.gif' %}"/> <br/> We are creating the network...</h1>' });
                 },
                 success: function(data, status, xhr) {
+                    //store the json data because we will need it to complete the network
+                    networkJson = data;
+                    //get the max and min values in the json.
+                    $('#max_sim_value').text(data['max_sim'].toFixed(2));
+                    $('#min_sim_value').text(data['min_sim'].toFixed(2));
+                    //ready.
                     plotNetwork(data);
+                    //draw the colourbar
+                    drawColourBar(data['max_sim'], data['min_sim']);
                     $.unblockUI();
                 },
                 error: function(data, status, xhr) {
                     console.log(data);
-                    alert('Something has gone wrong. Please click OK to continue');
                     $.unblockUI();
                 },
           });
         } 
-        
+
+
         function plotNetwork(data){
 
            cy = cytoscape({
@@ -153,11 +396,13 @@
                     'height': 20,
                     'content': 'data(id)',
                     'text-valign': 'center',
+                    'font-size': 12,
                   })
+
                 .selector('edge')
                   .css({
-                    'line-color': 'mapData(colour,0,1, blue, red)',
-                    'width': 2,
+                    'line-color': 'mapData(colour,0,1,blue,red)',
+                    'width': 2, 
                     'opacity': 0.8
                   })
                 .selector('.no_label')
@@ -185,9 +430,9 @@
                   }),
               
               elements: data,
-              
-              layout: {
-                name: 'concentric',
+                //layout is set after the ready function
+              /*layout: {
+                name: $("#change_layout").val(),
                 avoidOverlap: true,
                 concentric: function(){
                     return this.data('level');
@@ -195,15 +440,14 @@
                 circle: true,
                 minNodeSpacing: 19, 
                 padding:2, //padding of the plot with the canvas. 
-              },
+              },*/
 
              ready: function(){
                  //handle the click
                  var mynodes = this.nodes();
                  var myedges = this.edges();
 
-                 this.panzoom({
-                 })
+                 this.panzoom({ })
 
                  this.on('click', 'node', function(){
                      //restore all nodes to their default class
@@ -226,12 +470,15 @@
 
                  this.on('click', 'node', function(){
                      $("#query_disease").attr("value", this.data().id + ' - ' + this.data().title);
-                     query_disease_mim = this.data().id;
-                     query_disease_name = this.data().title;
+                     new_query_disease_mim = this.data().id;
+                     new_query_disease_name = this.data().title;
                  });
 
                  this.edges().qtip({
-                    content: function(){ return this.data().similarity},
+                    content: function(){ 
+                        return this.data().similarity.toFixed(2);
+
+                    },
                     position: {
                         my: 'top center',
                         at: 'bottom center'
@@ -260,6 +507,7 @@
                         }
                     }
                 });//qtip
+                setLayout(); //sets the layout for the graph
               }// ready 
         });
         } //plotNetwork
@@ -269,6 +517,10 @@
         </head>
 
         <body>
+            <!-- small div to contain the information for the dialog that ask for confirmation to fill a large network-->
+            <div id="dialog-confirm" title="Fill the network?">
+                <p><i class="fa fa-exclamation-triangle"></i>There are more than 25 nodes in the network, requesting all edges will take some time. Also, plotting such a large network is computationally intensive and your machine might not be able to handle it. Do you want to continue?</p>
+              </div>
             <!-- Header -->
                         <section id="header" class="skel-layers-fixed">
                                 <header>
@@ -282,7 +534,8 @@
                                                         <li><a href="http://www.paccanarolab.org/disimweb#two" >Search</a></li>
                                                         <li><a href="http://www.paccanarolab.org/disimweb#three" class="active">Explore</a></li>
                                                         <li><a href="http://www.paccanarolab.org/disimweb#four">Download</a></li>
-                                                        <li><a href="http://www.paccanarolab.org/disimweb#five">Acknowledgments</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#five">About</a></li>
+                                                        <li><a href="#" onclick="startIntro();">Help</a></li>
                                         </ul>
                                 </nav>
                                 <footer>
@@ -303,15 +556,16 @@
                                                         <table class="alt">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td rowspan="2" style="vertical-align:middle; width:10%;"><i id="compare" class="fa fa-compress fa-3x hover_change center" title='Click here to open a new tab and compare both diseases'></i></td>
-                                                                    <td><input id = "pivot_disease" size = "84" style="border:none;" disabled/> </td>
+                                                                    <td rowspan="2" style="vertical-align:middle; width:7%;"><i id="compare" class="fa fa-compress fa-3x hover_change center" title='Click here to open a new tab and compare both diseases'></i>
+                                                                    </td>
+                                                                    <td><input id = "pivot_disease" size = "95%" style="border:none;" disabled/> </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td >
                                                                         <div id="new_disease">
-                                                                            <i id="explore" class="fa fa-binoculars hover_change" title='Click to explore the neighbourhood of this disease'></i>
-                                                                            <input id = "query_disease" size = "84" style="border:none;"/> 
+                                                                            <input id = "query_disease" size = "95%" style="border:none; align:left; float:left;" disabled/>
                                                                         </div>
+                                                                        <i id="explore" class="fa fa-binoculars hover_change" title='Click to explore the neighbourhood of this disease' style="margin-top:10px; margin-left:5px;float:left"> </i>
                                                                     </td>
                                                                 </tr>
                                                             </tbody>
@@ -320,16 +574,64 @@
                                                 </div>
                                                 <div  id="graph"></div>
                                                 <div style="position:absolute;top:204px;left:1134px">
-                                                    <div style="padding:0px">3.7</div>
+                                                    <div style="padding:0px" id="max_sim_value"></div>
                                                     <canvas id="colorbar" width="20" height="400"></canvas>
-                                                    <div style="padding:0px 5px">0</div>
-                                                    <!-- centrado en el canvas top:354px left:1100px -->
+                                                    <div style="margin-top:-10px"id="min_sim_value"></div>
                                                 </div>
                                                 <br>
-                                                <div style="margin-left:100px">
-                                                        <input id ="label_toggle" type="checkbox" name="label_toggle" checked>
-                                                        <label style="margin-left:10px" for="label_toggle" onclick="toggleLabels();">Toggle node labels</label>
-                                                </div><!--styling for the buttons-->
+
+                                                <div style="width:1024px; margin-left:100px"> <!--large div for controls -->
+
+                                                <div style="float:left"> <!-- layout control div-->
+                                                        <div id ="toggle" style="margin-top:-10px; float:left; overflow:hidden">
+                                                             <div style="padding-left:15px">
+                                                                <input id ="label_toggle" type="checkbox" name="label_toggle" checked>
+                                                                <label onclick="toggleLabels();" for="label_toggle"></label>
+                                                            </div>
+                                                            <div>
+                                                                <span >Labels</span>
+                                                                <i class="fa fa-question-circle hover_change" title="Toggle node labels on and off."></i> 
+                                                            </div>
+                                                        </div>
+
+                                                        <div id="layout" style="float:left; margin-left:5px; margin-right:5px;margin-top:-10px">
+                                                            <select id="change_layout">
+                                                                <option value="concentric" selected>--Select layout--</option>
+                                                                <option value="concentric">Concentric (default)</option>
+                                                                <option value="random">Random</option>
+                                                                <option value="grid">Grid</option>
+                                                                <option value="breadthfirst">Breadthfirst</option>
+                                                            </select>
+                                                        </div>
+                                                        <input type="submit" value="Fill network" id="fill_network" style="float:left;margin-left:5px;margin-top:-10px"/>
+                                                </div> <!-- layout control div-->
+
+                                                <div style="float:right;" id="network_control"> <!-- network control div-->
+                                                    <div style="overflow:hidden; float:left;margin-top:-10px">
+                                                        <div style="overflow:hidden; float:left; margin-right:10px">
+                                                            <i class="fa fa-minus-square fa-2x" onclick="changeNeighbours('direct_value',-1)"style="float:left;margin:5px" ></i>
+                                                            <input disabled id ="direct_value" type="text" value=10 style="width:35px; padding:5px; float:left;"></input>
+                                                            <i class="fa fa-plus-square fa-2x" onclick="changeNeighbours('direct_value',1)" style="float:left;margin:5px"></i>
+                                                        </div>
+                                                        <div style="text-align:center"> First level  
+                                                            <i class="fa fa-question-circle hover_change" title="Number of diseases directly connected to the central disease"></i> 
+                                                        </div>
+                                                    </div>
+
+                                                    <div style="overflow:hidden; float:left;margin-top:-10px;margin-right:10px;">
+                                                        <div style="overflow:hidden">
+                                                            <i class="fa fa-minus-square fa-2x" onclick="changeNeighbours('indirect_value',-1)" style="float:left;margin:5px"></i>
+                                                            <input disabled id ="indirect_value" type="text" value=5 style="width:35px; padding:5px; float:left;"></input>
+                                                            <i class="fa fa-plus-square fa-2x" onclick="changeNeighbours('indirect_value',1)" style="float:left;margin:5px"></i>
+                                                        </div>
+                                                        <div style="text-align:center">Second level 
+                                                            <i class="fa fa-question-circle hover_change" title="Number of diseases connected to the first level neighbours of the central disease."></i> 
+                                                        </div>
+                                                    </div>
+                                                    <input type="submit" value="Update network" id="processRedraw" style="margin-left:5px;margin-top:-10px"/>
+                                                </div> <!-- network control div-->
+                                            </div> <!-- Large div for controls -->
+
                                                 </section>
                             </div>
 

@@ -30,6 +30,9 @@
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
         <style>
+            table a{
+                color: #888;
+            }
 
             .hover_change{
                  cursor: pointer; cursor: hand;
@@ -215,7 +218,7 @@
                                                         <li><a href="http://www.paccanarolab.org/disimweb#two" class="active">Search</a></li>
                                                         <li><a href="http://www.paccanarolab.org/disimweb#three">Explore</a></li>
                                                         <li><a href="http://www.paccanarolab.org/disimweb#four">Download</a></li>
-                                                        <li><a href="http://www.paccanarolab.org/disimweb#five">Acknowledgments</a></li>
+                                                        <li><a href="http://www.paccanarolab.org/disimweb#five">About</a></li>
                                                 </ul>
                                         </nav>
 
@@ -247,7 +250,7 @@
                                                                                         <td >
                                                                                             <a href="#first_disease">{{ name_disease_A }} ({{disease_A}})</a> 
                                                                                         </td>
-                                                                                        <td rowspan="2" style="vertical-align:middle; width:27%;"> <h4> {{similarity}} ({{percentile}} percentile) </h4></td>
+                                                                                        <td rowspan="2" style="vertical-align:middle; width:27%;"> <center> <h4> {{similarity|floatformat:3}}<br>({{percentile}} percentile) </h4></center> </td>
                                                                                     </tr>
                                                                                     <tr>
                                                                                         <td >
@@ -261,7 +264,9 @@
                                                                 <p>
                                                                     This is a histogram of the similarity scores. The height of the bar represents the
                                                                     percentage of disease pairs with a similarity score in the corresponding range. 
-                                                                    The diseases you looked for are in the red bar.
+                                                                    The similarity score for the chosen pair of diseases is located in the red
+                                                                    bar, below the red circle. Since some bars are very short, <i>i.e.</i> for high similarity values, 
+                                                                    we have placed this red circle to help locate them.
                                                                 <p>
                                                             </header>
                                                         </div>
@@ -275,7 +280,8 @@
                                                             </h4>
                                                                <h5>MeSH terms</h5>
                                                                {% for mesh in A_mesh %}
-                                                               <i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>
+                                                               <!--<i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>-->
+                                                               <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;
                                                                {%endfor%}
                                                                <br /> <br />
                                                                <h5>Known proteins </h5>
@@ -283,7 +289,8 @@
                                                                     <h6>No proteins found</h6>
                                                                 {% else %}
                                                                     {% for row in A_proteins %}
-                                                                    <i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>
+                                                                    <!--<i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>-->
+                                                                    <a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
                                                                     {%endfor%}
                                                                         
                                                                 {% endif %}
@@ -298,7 +305,8 @@
                                                             </h4>
                                                                <h5>MeSH terms</h5>
                                                                {% for mesh in B_mesh %}
-                                                                   <i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>
+                                                               <!--<i class="fa fa-link fa-border"><a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;</i>-->
+                                                                   <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>&nbsp;&nbsp;
                                                                {%endfor%}
                                                                <br /> <br />
                                                                <h5>Known proteins</h5>
@@ -306,7 +314,8 @@
                                                                     <h6>No proteins found</h6>
                                                                 {% else %}
                                                                     {% for row in B_proteins %}
-                                                                        <i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>
+                                                                    <!--<i class="fa fa-link fa-border"><a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a></i>-->
+                                                                        <a target="_blank" href="http://www.uniprot.org/uniprot/{{row}}">{{row}}</a>
                                                                     {%endfor%}
                                                                 {% endif %}
                                                         </div>

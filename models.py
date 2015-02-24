@@ -1,6 +1,13 @@
 from django.db import models
 
 # Create your models here.
+#CREATE TABLE disimweb_neighbourhood (omim1 text, omim2 text, similarity text);
+class neighbourhood(models.Model):
+    omim1 = models.CharField(max_length=10)
+    omim2 = models.CharField(max_length=10)
+    similarity = models.CharField(max_length=10)
+    lca = models.CharField(max_length=100)
+
 
 #c.execute('''CREATE TABLE similarity (omim1 text, omim2 text, similarity text)''')
 class similarityScores (models.Model):
@@ -8,6 +15,7 @@ class similarityScores (models.Model):
     omim2 = models.CharField(max_length=10)
     similarity = models.CharField(max_length=10)
     percentile = models.CharField(max_length=10)
+    #lca = models.CharField(max_length=100)
 
 #c.execute('''CREATE TABLE mimtoprot (omim text, uniprot_id text)''')
 class mimtoprot(models.Model):
