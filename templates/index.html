@@ -174,7 +174,7 @@
 					<header>
                         <span class="image avatar"><img src="{% static 'images/logo.png' %}" alt="DisimWeb logo" /></span>
 						<h1 id="logo"><a href="#">Disimweb</a></h1>
-						<p>A disease similarity browser</p>
+						<p>The disease similarity browser</p>
 					</header>
 					<nav id="nav">
 						<ul>
@@ -203,32 +203,43 @@
 						<section id="one">
 							<div class="container">
 								<header class="major">
-                                <h2 style = "font-size:2.5em;line-height:1.2em">
-                                        PaccanaroLab's Disease similarity browser
-                                    </h2>
+                                <h3 style = "font-size:2.5em;line-height:1.2em">
+                                    Welcome!
+                                </h3>
 								</header>
                                 <div style = 'text-align: justify; text-justify: inter-word;'>
                                     <p style="margin-bottom: 0.5em">
-                                        Great advances have been made over the past decades and we have more information than ever before. This
-                                        vast amount of proteomic data has helped clarify the relationship between a disease phenotype and its causes, to a point
-                                        where it is now clear that a disease is a wider perturbation in the underlying biological networks.
+                                    Welcome to <b>Disimweb: The disease similarity browser</b>. Disimweb allows you to search <a href="http://www.omim.org">OMIM</a> diseases 
+                                    and find their pairwise similarities based on <a href="http://www.paccanarolab.org/disease_similarity">our</a> method.
+                                    We also provide an intuitive way of exploring the complex landscape of hereditable disease through our <i>Explorer</i>, which allows 
+                                    users to visualise a diseases neighbourhood, that is, the group of diseases that are most similar to it.
+                                    </p>
+                                    <h4> How are the scores computed? </h4>
+                                    <p style="margin-bottom: 0.5em">
+                                        Large scale proteomics data has helped clarify the relationship between a disease phenotype and its causes, to a point
+                                        where it is now clear that a disease is a wider perturbation in the underlying biological networks. Nevertheless, 
+                                        there is relatively little molecular information about the hereditable diseases described in <a href="http://www.omim.org">OMIM</a> 
+                                        due mainly to difficulties associated with the wet lab experiments. To put this in perspective, 45% of the known 
+                                        hereditable diseases in OMIM have no known causal genes, and for the remaining ones, the information might not be complete.
                                     </p>
                                     <p style="margin-bottom: 0.5em">
-                                        There is relatively little molecular information about the hereditable diseases described in <a href="http://www.omim.org">OMIM</a>, with 
-                                        very few causal genes identified for most diseases and none for more than 45% of them. On the other hand there is an abundance of 
-                                        phenotype descriptions that, although not well suited for machine processing, provide comprehensive information on the various
-                                        diseases. 
+                                        On the other hand, there is an abundance of phenotype descriptions that, although not well suited for 
+                                        machine processing, provide comprehensive information on the various diseases. This information 
+                                        reflects the complexity of each disease's molecular foundations and thus quantifying 
+                                        similarity at this level would reflect the closeness at molecular level between two diseases. Accurately
+                                        quantifying this molecular closeness could shine a light on the discovery of new disease genes and possibly 
+                                        help identify new targets for drugs. 
                                     </p>
                                     <p style="margin-bottom: 0.5em">
-                                        We designed a method to extract the information contained in <a href="http://www.omim.org">OMIM</a> and, using the structure
-                                        provided by <a href="http://www.nlm.nih.gov/mesh/">MeSH</a>, obtain a single number to characterise the similarity of any two
-                                        genetic diseases.
-                                        Our method is able to integrate the different domains of knowledge contained in MeSH, and we can show that our similarity measure
-                                        reflects the common molecular machinery associated to similar diseases.
+                                    We designed a method to extract the wealth information contained in <a href="http://www.omim.org">OMIM</a> that 
+                                    relies on the of <a href="http://www.nlm.nih.gov/mesh/">MeSH</a> to obtain a single number to characterise the similarity 
+                                    of any two genetic diseases.  Our method is able to integrate 
+                                        information from various domains of knowledge effectively, and we can show that our similarity measure reflects the 
+                                        common molecular machinery associated to similar diseases.
                                     </p>
-                                    <p>
-                                        We  have developed this browser where users can query pairs of diseases or explore a diseases "neighbourhood". 
-                                        We have made all data and code available for <a href="#four">Download</a>.
+                                    <p style="margin-bottom: 0.5em">
+                                       Visit the <a href="#four">Downloads</a> section to obtain a copy of the similarity matrix and links 
+                                       to the source code repositories.
                                     </p>
                                 </div>
 
@@ -330,8 +341,8 @@
                                 from this <a href="https://github.com/pwac092/disimweb">GitHub repository.</a>
                                     </p>
                                     <p style="margin-bottom: 0.5em">
-                                        It benefited greatly from the help provided by <a href="http://www.cs.rhul.ac.uk/~aeromero/">Dr. Alfonso E. Romero</a>
-                                        Juan Caceres provided help debugging the JavaScript and HTML, and Mateo Torres helped conceptualise the 
+                                        It benefited greatly from the help provided by <a href="http://www.cs.rhul.ac.uk/~aeromero/">Alfonso E. Romero</a>.
+                                        Juan Caceres provided help debug the JavaScript and HTML, and Mateo Torres helped conceptualise the 
                                         browser and provided feedback once it was completed. 
                                     <br>
                                     </p>
@@ -343,7 +354,7 @@
                             <section id="footer">
                                     <div class="container">
                                             <ul class="copyright">
-                                                    <li>&copy; Disimweb - A disease similarity browser. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                                                    <li>&copy; Disimweb - The disease similarity browser. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
                                             </ul>
                                     </div>
                             </section>
