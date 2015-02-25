@@ -347,7 +347,6 @@
                         $.unblockUI();
                     },
                     error: function(data, status, xhr) {
-                        console.log('error');
                         console.log(data);
                         $.unblockUI();
                     },
@@ -375,7 +374,6 @@
                     //draw the colourbar
                     drawColourBar(data['max_sim'], data['min_sim']);
                     $.unblockUI();
-                    console.log(data);
                 },
                 error: function(data, status, xhr) {
                     console.log(data);
@@ -468,14 +466,19 @@
                              neighbours[i].addClass('highlighted');
                          }
                      }
-                        
-                 }); //on tap
-
-                 this.on('click', 'node', function(){
                      $("#query_disease").attr("value", this.data().id + ' - ' + this.data().title);
                      new_query_disease_mim = this.data().id;
                      new_query_disease_name = this.data().title;
+                        
+                 }); //on tap
+
+                 this.on('click','edge', function(){
+                     mynodes.removeClass('highlighted');
+                     mynodes.removeClass('highlighted_centre');
+                     this.source().addClass('highlighted');
+                     this.target().addClass('highlighted');
                  });
+
 
                  this.edges().qtip({
                     content: function(){ 

@@ -59,7 +59,7 @@ def score(request, omim_A, omim_B):
     sim = similarityScores.objects.get(omim1__exact = min(omim_A,omim_B), omim2__exact = max(omim_A,omim_B))
     #get MeSH terms
     #http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term=Sensitivity+and+Specificity&field=entry
-    A_mesh_unique = sorted(list(set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_A)])))
+    A_mesh_unique = (list(set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_A)])))
 
     A_mesh = dict()
     for i in A_mesh_unique:
@@ -71,7 +71,7 @@ def score(request, omim_A, omim_B):
         A_mesh[i[0]].append((i, "http://www.nlm.nih.gov/cgi/mesh/2014/MB_cgi?mode=&term="+i.replace(' ', '+')+"&field=entry"))
 
 
-    B_mesh_unique  = sorted(list(set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_B)])))
+    B_mesh_unique  = (list(set([i.mesh_term for i in mesh.objects.filter(omim__exact=omim_B)])))
 
     B_mesh = dict()
     for i in B_mesh_unique:

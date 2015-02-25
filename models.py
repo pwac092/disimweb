@@ -31,6 +31,7 @@ class ppi(models.Model):
 class mesh(models.Model):
     omim = models.CharField(max_length=10)
     mesh_term = models.CharField(max_length=10)
+    #mesh_tree = modesl.CharField(max_length=100)
 
 
 #    c.execute('''CREATE TABLE omim_details (omim text, title text, prefix text)''')

@@ -36,7 +36,6 @@
 
             .hover_change{
                  cursor: pointer; cursor: hand;
-                 float:left;
             }
 
             .bar {
@@ -71,18 +70,64 @@
                   font: 10px sans-serif;
                   text-anchor: end;
              }
+
+
+             /*controls to hide partial mesh lists*/
+
+            .firstletter{
+                font-weight: bold;
+                margin-right:5px;
+            }
+            .meshcontent{
+                overflow:hidden;
+                width: 750px;
+            }
+            .meshparent{
+                overflow:hidden;
+            }
+
+
         </style>
 
 
         <script type = "text/javascript">
 
             $(document).ready(function() {
-                //control the collapsible lists
-                 $('.child').hide();
 
-                 $('.parent').click(function() {
-                         $(this).find('ul').slideToggle();
-                         });
+            //controls for toggling of meshterms.
+            /*var toggleMinHeight = 30,
+                duration = 500,
+                easing = 'swing';
+
+            $('.meshparent .firstletter i').each(
+                function(){
+                    var elementId = $(this).parents('.meshparent').find('.meshcontent');
+                    elementId.attr('data-height',elementId.height());
+                }).click(
+                function(){
+                    var elementId = $(this).parents('.meshparent').find('.meshcontent');
+                    var curH = elementId.height();
+                    if (elementId.is(':animated')){
+                        return false;
+                    }
+
+                    else if (curH == elementId.attr('data-height')) {
+                        elementId.animate(
+                            {
+                               'height' : toggleMinHeight
+                            }, duration, easing);
+                    }
+                    else if (curH == toggleMinHeight){
+                        elementId.animate(
+                            {
+                                'height' : elementId.attr('data-height')
+                            }, duration, easing);
+                    }
+                });
+
+                $(".meshparent .meshcontent").css('height',"30px");*/
+            //------
+
 
                 //start the tooltip
                 $(function() {
@@ -148,7 +193,6 @@
                       .call(yAxis);
 
 
-
                   svg.selectAll(".bar")
                       .data(data)
                       .enter().append("rect")
@@ -158,7 +202,7 @@
                           {
                                svg.append("circle")
                                   .attr("cx", x(d.bucket) + x(0.1)-2)
-                                  .attr("cy", y(d.value) - 25).attr("r", 4)
+                                  .attr("cy", y(d.value) - 15).attr("r", 4)
                                   .style("fill", 'brown');
                                return "brown";
                           }
@@ -285,19 +329,30 @@
                                                                 <a href="{% url 'explore' disease_A %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
                                                                 <a href="http://www.omim.org/{{disease_A}}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             </h4>
-                                                            <h4>MeSH terms <a href="javascript:void(0)" onclick="expandAll()">(expand all)</a></h4>
-                                                               <ul>
-                                                               {% for first_letter, value in A_mesh.items %}
-                                                               <ul class="parent">
-                                                                   <a href="javascript:void(0)">{{first_letter}}</a>
-                                                                    {% for mesh in value %}
-                                                                       <ul class="child" > <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a></ul> 
+                                                            <h4>MeSH terms</h4>
+                                                            <!-- FOR FUTURE IMPLEMENTATION: GROUP TERMS
+                                                            {% for first_letter, value in A_mesh.items %}
+                                                               <div class="meshparent">
+                                                                   <div class="firstletter">
+                                                                       {{first_letter}} <i class="fa fa-expand hover_change"></i>
+                                                                   </div>
+                                                                   <div class="meshcontent">
+                                                                   {% for mesh in value %}
+                                                                        <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>
                                                                    {% endfor %}
-                                                               </ul>
+                                                                   </div>
+                                                               </div>
+                                                               {%endfor%}-->
+
+                                                               <div style="text-align:justify">
+                                                               {%for first_letter, value in A_mesh.items %}
+                                                                   {% for mesh in value %}
+                                                                        <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>
+                                                                   {% endfor %}
                                                                {%endfor%}
-                                                               <ul>
-                                                               <br /> <br />
-                                                               <h5>Known proteins </h5>
+                                                           </div>
+                                                               <br /> 
+                                                               <h4>Known proteins </h4>
                                                                 {% if A_proteins|length == 0 %}
                                                                     <h6>No proteins found</h6>
                                                                 {% else %}
@@ -315,22 +370,32 @@
                                                                 <a href="{% url 'explore' disease_B %}" target="_blank"><i class="fa fa-binoculars" title="Explore (opens in new tab)"></i></a>
                                                                 <a href="http://www.omim.org/{{disease_B}}" target="_blank"><i class="fa fa-link" title="Go to OMIM (opens in new tab)"></i></a>
                                                             </h4>
-                                                            <h4>MeSH terms <a href="javascript:void(0)" onclick="expandAll()">(expand all)</a></h4>
-                                                               <ul>
-                                                               {% for first_letter, value in B_mesh.items %}
-                                                               <ul class="parent">
-                                                               <a href="javascript:void(0)">{{first_letter}}</a>
-                                                                    {% for mesh in value %}
-                                                                       <ul class="child"> <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a></ul></li>
+                                                            <h4>MeSH terms</h4>
+                                                               <!--{% for first_letter, value in B_mesh.items %}
+                                                               <div class="meshparent">
+                                                                   <div class="firstletter"> 
+                                                                       {{first_letter}} <i class="fa fa-expand hover_change"></i>
+                                                                   </div>
+                                                                   <div class="meshcontent">
+                                                                   {% for mesh in value %}
+                                                                        <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>
                                                                    {% endfor %}
-                                                               </ul>
+                                                                   </div>
+
+                                                               </div>
+                                                               {%endfor%}-->
+                                                               <div style="text-align:justify">
+                                                               {%for first_letter, value in B_mesh.items %}
+                                                                   {% for mesh in value %}
+                                                                        <a target="_blank" href="{{mesh.1}}">{{mesh.0}}</a>
+                                                                   {% endfor %}
                                                                {%endfor%}
-                                                               </ul>
+                                                               </div>
                                                                <!--{% for mesh in B_mesh %}
                                                                <a target="_blank" href="{{mesh.2}}">{{mesh.1}},{{mesh.0}}</a>&nbsp;&nbsp;
                                                                {%endfor%}-->
-                                                               <br /> <br />
-                                                               <h5>Known proteins</h5>
+                                                               <br />
+                                                               <h4>Known proteins</h4>
                                                                 {% if B_proteins|length == 0 %}
                                                                     <h6>No proteins found</h6>
                                                                 {% else %}
