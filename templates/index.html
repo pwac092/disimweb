@@ -30,16 +30,40 @@
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
         <style>
-    .hover_change{
-         cursor: pointer; cursor: hand;
-         float:left;
-    }
+            /*styling for the hover*/
+            .hover_change{
+                 cursor: pointer; cursor: hand;
+                 float:left;
+            }
+
             .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
         </style>
 
         <script>
 
         $(document).ready(function() {
+                    //Hiding teh more info div.
+                    $("#more_info").hide();
+
+                    $('#more_info_toggle').click(function(){
+                        //move the thing.
+                        $("#more_info").slideToggle();
+                        //change the icon
+                        if(!$('#more_info').is(':visible'))
+                        {
+                            //remove minus add plus
+                            $("#more_info_toggle").toggleClass("fa fa-minus-square-o");
+                            $("#more_info_toggle").toggleClass("fa fa-plus-square-o");
+                        }
+                        else
+                        {
+                            //remove plus add minus
+                            $("#more_info_toggle").toggleClass("fa fa-plus-square-o");
+                            $("#more_info_toggle").toggleClass("fa fa-minus-square-o");
+                        }
+                    });
+                    //===
+
 
                     $( "#diseaseA_input" ).autocomplete({ 
                         "delay": 0, 
@@ -204,53 +228,62 @@
 							<div class="container">
 								<header class="major">
                                 <h3 style = "font-size:2.5em;line-height:1.2em">
-                                    Welcome!
+                                   Disimweb: The disease similarity browser
                                 </h3>
 								</header>
                                 <div style = 'text-align: justify; text-justify: inter-word;'>
                                     <p style="margin-bottom: 0.5em">
-                                    Welcome to <b>Disimweb: The disease similarity browser</b>. Disimweb allows you to search <a href="http://www.omim.org">OMIM</a> diseases 
-                                    and find their pairwise similarities based on <a href="http://www.paccanarolab.org/disease_similarity">our</a> method.
-                                    We also provide an intuitive way of exploring the complex landscape of hereditable disease through our <i>Explorer</i>, which allows 
-                                    users to visualise a diseases neighbourhood, that is, the group of diseases that are most similar to it.
-                                    </p>
-                                    <h4> How are the scores computed? </h4>
-                                    <p style="margin-bottom: 0.5em">
-                                        Large scale proteomics data has helped clarify the relationship between a disease phenotype and its causes, to a point
-                                        where it is now clear that a disease is a wider perturbation in the underlying biological networks. Nevertheless, 
-                                        there is relatively little molecular information about the hereditable diseases described in <a href="http://www.omim.org">OMIM</a> 
-                                        due mainly to difficulties associated with the wet lab experiments. To put this in perspective, 45% of the known 
-                                        hereditable diseases in OMIM have no known causal genes, and for the remaining ones, the information might not be complete.
+                                    Welcome to Disimweb, the <a href="http://www.paccanarolab.org">PaccanaroLab's</a> disease similarity browser.
                                     </p>
                                     <p style="margin-bottom: 0.5em">
-                                        On the other hand, there is an abundance of phenotype descriptions that, although not well suited for 
-                                        machine processing, provide comprehensive information on the various diseases. This information 
-                                        reflects the complexity of each disease's molecular foundations and thus quantifying 
-                                        similarity at this level would reflect the closeness at molecular level between two diseases. Accurately
-                                        quantifying this molecular closeness could shine a light on the discovery of new disease genes and possibly 
-                                        help identify new targets for drugs. 
+                                        Disimweb allows you to search over 28 Million pairwise similarities between <a href="http://www.omim.org">OMIM</a> diseases, that 
+                                        we obtain performing a thorough ontological analysis of hereditable diseases. For more information on the 
+                                        method, click <a href="http://www.paccanarolab.org/disease_similarity">here</a>.
                                     </p>
                                     <p style="margin-bottom: 0.5em">
-                                    We designed a method to extract the wealth information contained in <a href="http://www.omim.org">OMIM</a> that 
-                                    relies on the of <a href="http://www.nlm.nih.gov/mesh/">MeSH</a> to obtain a single number to characterise the similarity 
-                                    of any two genetic diseases.  Our method is able to integrate 
-                                        information from various domains of knowledge effectively, and we can show that our similarity measure reflects the 
-                                        common molecular machinery associated to similar diseases.
+                                        We have also implemented an <i>Explorer</i> designed to provide an intuitive way of visualising and navigating the 
+                                        complex landscape of hereditable diseases.
                                     </p>
+
                                     <p style="margin-bottom: 0.5em">
-                                       Visit the <a href="#four">Downloads</a> section to obtain a copy of the similarity matrix and links 
-                                       to the source code repositories.
+                                        If you found our data useful, please cite:
+                                        <br/>
+                                        <p style="margin-top:-10px; line-height: 18px;margin-bottom:0em">
+                                            <strong> Measuring similarity of Mendelian diseases through ontological analysis </strong> <br/>
+                                            <i> Horacio Caniza, Alfonso E. Romero and Alberto Paccanaro </i>
+                                            <br/>
+                                            <i>(Submitted)</i>
+                                        </p>
                                     </p>
+
+                                    <div>
+                                        <i style="cursor:hand;cursor:pointer;" class="fa fa-plus-square-o" id="more_info_toggle"> An informal introduction on our disease similarity method</i>
+                                            <div id="more_info">
+                                                <p style="margin-bottom: 0.5em">
+                                                    Large scale proteomics data has helped clarify the relationship between a disease phenotype and its causes, to a point
+                                                    where it is now clear that a disease is a wider perturbation in the underlying biological networks. Nevertheless, 
+                                                    there is relatively little molecular information about the hereditable diseases described in <a href="http://www.omim.org">OMIM</a> 
+                                                    To put this in perspective, 45% of the known 
+                                                    hereditable diseases in OMIM have no known causal genes, and for the remaining ones, the information might not be complete.
+                                                </p>
+                                                <p style="margin-bottom: 0.5em">
+                                                    On the other hand, there is an abundance of phenotype descriptions that, although not well suited for 
+                                                    machine processing, provide comprehensive information on the various diseases.  This information 
+                                                    reflects the complexity of each disease's molecular foundations and thus quantifying 
+                                                    similarity at this level would reflect the closeness at molecular level between two diseases. Accurately
+                                                    quantifying this molecular closeness could shine a light on the discovery of new disease genes and possibly 
+                                                    help identify new targets for drugs. 
+                                                </p>
+                                                <p style="margin-bottom: 0.5em">
+                                                    By annotating the diseases in OMIM with the MeSH terms associated to the publications they reference, we
+                                                    are able to obtain high-quality annotations for the diseases. These annotations, in combination with the
+                                                    structure of the MeSH ontologies allows us to obtain a single number that characterises molecular similarity
+                                                    between the diseases with high accuracy.
+                                                </p>
+                                            </div>
+                                    </div>
                                 </div>
 
-                    <p>
-                        If you found our data useful, please cite:<br/>
-                        <strong>
-                            An ontology–based measure of similarity between hereditable disease<br>
-                        </strong>
-                        <i> Horacio Caniza, Alfonso E. Romero and Alberto Paccanaro </i>
-
-                    </p>
 
 							</div>
 						</section>
@@ -288,7 +321,7 @@
                                                                 <input class = "autocomplete_box" id="disease_explore" required="" placeholder="Disease name" name="disease_explore" type="text" size="40" value="BREAST CANCER(114480)"/>
                                                                 <input id="disease_explore_hidden"  type="hidden" value="114480"/>
                                                                 <br/>
-                                                                <input type="submit" value="Explore the neighbourhood"/>
+                                                                <input type="submit" value="Explore"/>
                                                             </form>
                                                          </div> <!--container-->
 						</section>

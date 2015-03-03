@@ -25,6 +25,10 @@
                 <link rel="stylesheet" href="{% static 'css/style-xlarge.css' %}" />
                 <!--[if lte IE 8]><link rel="stylesheet" href="{% static 'css/ie/v8.css' %}" /><![endif]-->
                 <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+                <script type="text/javascript" src="{% static 'javascript/springy.js' %}"></script>
+
+
+
                 <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
                 <!-- qtip -->
                 <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
@@ -77,39 +81,59 @@
                   intro.setOptions({
                     steps: [
                       { 
-                        intro: "Hello! This page allows you to explore the \"neighbourhood\" of a disease. We connect every target disease with the 10 diseases that are most similar to it. In order to provide a wider picture, we connect these 10 diseases to their 5 most similar ones. The size of the network can be modified by the user."
+                          intro: 'Hello! This page allows you to explore the "neighbourhood" of a target disease. <ul style="margin-bottom:0px"><li>Every <strong>node</strong> is an OMIM disease, and the numbers shown are OMIM disease identifiers.</li><li>A <strong>link</strong> represents the similarity score between the two disease it connects, coloured according to its similarity value.</li><li>The <strong>target disease</strong> appears in the centre, and it is connected to the 10 diseases that are most similar to it.</li></ul> In order to provide a wider picture, we connect these 10 diseases to their 5 most similar ones. The number of neighbours can be modified by the user. This explorer works best on Google Chrome.'
+
+                      },
+                      {
+                        //check number of neighbours
+                        element: document.querySelector('#network_control'),
+                        intro: "Use these controls to change the number of neighbours that will appear in the plot.",
+                        position: 'top'
                       },
                       {
                         //pivot disease
                         element: document.querySelector('#pivot_disease'),
-                        intro: "This text box shows the query disease."
+                        intro: "This text box shows the target disease."
                       },
                       {
                         //clicked disease
                         element: document.querySelector('#query_disease'),
-                        intro: "This text box shows the disease that was selected by clicking on one the nodes in the network."
+                        intro: "If you select a disease by clicking on a node, it will appear in this text box."
                       },
                       {
                         //binoculars
                         element: document.querySelector('#explore'),
-                        intro: "If you click on this button you will explore the \"neighbourhood\" of the disease in the lower text box."
+                        intro: "If you click on this button, the disease in the lower box will become the target disease, and you will be exploring its neighbourhood. In other words, this disease will become the centre of the network.",
+                        position: 'right'
                       },
                       {
                         //compare icon
                         element: document.querySelector('#compare'),
-                        intro: "If you click on this button, a new tab will be opened with a detailed comparison of both disease.",
+                        intro: "If you click on this button, a new tab will open showing the details of the similarity score between the two diseases in the boxes.",
                         position: 'right'
                       },
                       {
                         //canvas
                         element: document.querySelector('#graph'),
-                        intro: "This is were the network will be shown. You can click the nodes to select a disease and on the links to display the similarity between the connected diseases. Zoom and pan levels are set with the controls on the top left.",
+                        intro: "This is where the network will be shown. You can click the nodes to select a disease and on the links to display the similarity between the connected diseases. Zoom and pan levels are set with the controls on the top left. Clicking and dragging the nodes allows you to move them around.",
+                        position: 'top'
+                      },
+                      {
+                        //download
+                        element: document.querySelector('#download_figure'),
+                        intro: "Clicking on this icon will open a new tab with the image for download.",
                         position: 'top'
                       },
                       {
                         //toggle node labels
                         element: document.querySelector('#toggle'),
-                        intro: "Check here to hide and show the MIM numbers represented by each node.",
+                        intro: "Check here to hide and show the node labels in the network.",
+                        position: 'top'
+                      },
+                      {
+                        //select type of label
+                        element: document.querySelector('#label_type'),
+                        intro: "Select whether to show OMIM disease IDs or OMIM disease names as node labels. Note that often disease names are quite long, and they can overlap. Therefore this feature works best when only few nodes are displayed.",
                         position: 'top'
                       },
                       {
@@ -121,20 +145,38 @@
                       {
                         //fill network
                         element: document.querySelector('#fill_network'),
-                        intro: "Clicking this button will fully connect the newtork. Keep in mind that this will take some time for larger networks.",
+                        intro: "Clicking this button will draw connections between every pair of nodes. Keep in mind that this might take some time for larger networks.",
                         position: 'top'
                       },
-                      {
-                        //check number of neighbours
-                        element: document.querySelector('#network_control'),
-                        intro: "Use these controls to change the number of nodes that will appear in the plot.",
-                        position: 'top'
-                      }
                     ]
                   });
 
+                  intro.setOption('tooltipPosition', 'auto');
                   intro.start();
               }
+
+            //just something to change the type of label shown
+            function selectNames()
+            {
+                var add  =  $("#select_names").val(); 
+
+                if (add == "node_with_name")
+                {
+                    var remove = "node_with_id";
+                }
+                else if (add == "node_with_id")
+                {
+                    var remove = "node_with_name";
+                }
+                
+                var mynodes = cy.nodes();
+                //add the class for the other nodes.
+                for (var i = 0; i < mynodes.length; i++)
+                {
+                    mynodes[i].removeClass(remove);
+                    mynodes[i].addClass(add);
+                }
+            }
 
             //just something to change the layout of the display.
             function setLayout()
@@ -155,6 +197,22 @@
                         padding:2, //padding of the plot with the canvas. 
                     });
                 }
+                else if (which_layout == "force")
+                {
+                    layout = cy.makeLayout({
+                        name: 'springy',
+                        animate: true, // whether to show the layout as it's running
+                        maxSimulationTime: 4000, // max length in ms to run the layout
+                        ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
+                        fit: true, // whether to fit the viewport to the graph
+                        padding: 30, // padding on fit
+                        boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+                        random: false, // whether to use random initial positions
+                        infinite: false, // overrides all other options for a forces-all-the-time mode
+                        ready: undefined, // callback on layoutready
+                        stop: undefined, // callback on layoutstop
+                    });
+                }
                 else
                 {
                     layout = cy.makeLayout({
@@ -164,8 +222,22 @@
 
                 layout.run();
             }
+            //download the figure
+
 
         $( document ).ready(function() {
+
+            $("#download_figure").click(function (){
+                var png64 = cy.png();
+                window.open(png64,"_blank");
+                //newwindow=window.open();
+                //newdocument=newwindow.document;
+                //newdocument.write('<img src="'+png64+'"></img>');
+                //newdocument.close(); // maybe not
+            });
+
+
+
             //prepare the modal dialog to verify if the user wants to fill
             //the network even though it might be a bit too big.
             $( "#dialog-confirm" ).dialog({
@@ -201,6 +273,9 @@
                 $( document ).tooltip();
             });
 
+            $("#select_names").click(function (){
+                selectNames();
+            });
             //set the layout
             $("#change_layout").click(function (){
                 setLayout();
@@ -288,10 +363,12 @@
             if (!$("#label_toggle").prop("checked"))
             {
                 cy.nodes().removeClass('no_label');
+                $("#select_names").prop( "disabled", false );
             }
             else
             {
                 cy.nodes().addClass('no_label');
+                $("#select_names").prop( "disabled", true);
             }
         }
 
@@ -333,7 +410,7 @@
                     url: URL_fill,
                     data: JSON.stringify(networkJson),
                     beforeSend: function( xhr ) {
-                        $.blockUI({ message: '<h1><img src="{% static 'images/loading.gif' %}"/> <br/> We are creating the network...</h1>' });
+                        $.blockUI({ message: '<h1><img src="{% static 'images/loading.gif' %}"/> <br/> We are creating the network. Please, be patient...</h1>' });
                     },
                     success: function(data, status, xhr) {
                         //store the json data because we will need it to complete the network
@@ -390,12 +467,21 @@
               style: cytoscape.stylesheet()
                 .selector('node')
                   .css({
-                    //'background-color': 'data(colour, 0, 100)',
                     'width': 20,
                     'height': 20,
                     'content': 'data(id)',
                     'text-valign': 'center',
                     'font-size': 12,
+                  })
+
+                .selector('.node_with_name')
+                  .css({
+                    'content': 'data(id)'
+                  })
+
+                .selector('.node_with_id')
+                  .css({
+                    'content': 'data(title)'
                   })
 
                 .selector('edge')
@@ -558,7 +644,7 @@
                                                 <section id="one">
                                                 <div class="">
                                                     <div style="width:1024px; margin-left:100px; padding-top:10px">
-                                                        <table class="alt">
+                                                        <table class="alt" style="width:1024px;">
                                                             <tbody>
                                                                 <tr>
                                                                     <td rowspan="2" style="vertical-align:middle; width:7%;"><i id="compare" class="fa fa-compress fa-3x hover_change center" title='Click here to open a new tab and compare both diseases'></i>
@@ -577,7 +663,8 @@
                                                         </table>
                                                         </div>
                                                 </div>
-                                                <span style="margin-left:100px;"> Click <a href="#" onclick="startIntro();">here</a> for a brief tutorial on how to use this page.</span>
+                                                <span style="margin-left:100px;"> <a href="#" onclick="startIntro();">Brief tutorial</a> on how to use this page.</span>
+                                                <i class="fa fa-download hover_change" id="download_figure" style="margin-left:590px" title="Opens a tab with the image for download"> Download image</i>
                                                 <div  id="graph"></div>
                                                 <div style="position:absolute;top:204px;left:1134px">
                                                     <div style="padding:0px" id="max_sim_value"></div>
@@ -599,14 +686,21 @@
                                                                 <i class="fa fa-question-circle hover_change" title="Toggle node labels on and off."></i> 
                                                             </div>
                                                         </div>
+                                                        <div id="label_type" style="float:left; margin-left:5px; margin-right:5px;margin-top:-10px">
+                                                            <select id="select_names" class="hover_change" title="Choose the type of label to show">
+                                                                <option value="node_with_name" selected>OMIM ids</option>
+                                                                <option value="node_with_id">OMIM names</option>
+                                                            </select>
+                                                        </div>
 
                                                         <div id="layout" style="float:left; margin-left:5px; margin-right:5px;margin-top:-10px">
-                                                            <select id="change_layout">
-                                                                <option value="concentric" selected>--Select layout--</option>
-                                                                <option value="concentric">Concentric (default)</option>
+                                                            <select id="change_layout" class="hover_change" title="Choose the layout of the network">
+                                                                <option value="concentric" selected>Concentric</option>
+                                                                <option value="circle">Circle</option>
                                                                 <option value="random">Random</option>
                                                                 <option value="grid">Grid</option>
                                                                 <option value="breadthfirst">Breadthfirst</option>
+                                                                <option value="force">Force directed</option>
                                                             </select>
                                                         </div>
                                                         <input type="submit" value="Fill network" id="fill_network" style="float:left;margin-left:5px;margin-top:-10px"/>
